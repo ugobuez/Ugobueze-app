@@ -1,0 +1,44 @@
+### Create a Gift Card
+POST http://localhost:3500/api/giftcards
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2N2UzYzE0ZTMyNDBlYWQzNDNlNzM5MWQiLCJpc0FkbWluIjp0cnVlLCJpYXQiOjE3NDI5ODUwNzIsImV4cCI6MTc0Mjk4ODY3Mn0.MfZ211VHaKKlBLEKyfh7kjoOCuvNldftn3WHJAiAPgg
+Content-Type: application/json
+
+{
+  "name": "Razer Gold Pin",
+  "brand": "Razer",
+  "value": 1170,
+  "currency": "USD",
+  "image": "https://res.cloudinary.com/drbiup2zg/image/upload/v1742984827/razer_kqt8dh.webp"
+}
+
+### User Login
+POST http://localhost:3500/api/auth/loginNow
+Content-Type: application/json
+
+{
+  "email": "ugochukwumeshach54@gmail.com",
+  "password": "Askme@54"
+}
+
+### get giftcard
+GET http://localhost:3500/api/admin/redemptions
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2N2UzYzE0ZTMyNDBlYWQzNDNlNzM5MWQiLCJuYW1lIjoiVWdvY2h1a3d1IE1lc2hhY2giLCJlbWFpbCI6InVnb2NodWt3dW1lc2hhY2g1NEBnbWFpbC5jb20iLCJpc0FkbWluIjp0cnVlLCJpYXQiOjE3NDQ2NTkyMTcsImV4cCI6MTc0NDY2MjgxN30.BC6TTKPQkdn74y7yeE5QDUwALk0D2O7Dj9_7Tn1j8IA
+### Accept giftcard
+POST  http://localhost:3500/api/admin/redemptions/67e3c48395c4adce6d41c9c1/accept
+Authorization: Bearer  eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2N2UzYzE0ZTMyNDBlYWQzNDNlNzM5MWQiLCJpc0FkbWluIjp0cnVlLCJpYXQiOjE3NDQ1NTgzNTYsImV4cCI6MTc0NDU2MTk1Nn0.ZlleMpNaPNisXHVQvejNkO5u6l0PLbhy8jM3YNmTfTc
+Content-Type: application/json
+
+
+### Reject giftcard
+POST  http://localhost:3500/api/admin/redemptions/67ec33f154e4c1a5b4d09b2a/reject
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2N2UzYzE0ZTMyNDBlYWQzNDNlNzM5MWQiLCJpc0FkbWluIjp0cnVlLCJpYXQiOjE3NDQ1NTgzNTYsImV4cCI6MTc0NDU2MTk1Nn0.ZlleMpNaPNisXHVQvejNkO5u6l0PLbhy8jM3YNmTfTc
+Content-Type: application/json
+
+### Reason
+POST  http://localhost:3500/api/admin/redemptions/67ec33f154e4c1a5b4d09b2a/reject
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2N2UzYzE0ZTMyNDBlYWQzNDNlNzM5MWQiLCJpc0FkbWluIjp0cnVlLCJpYXQiOjE3NDQ1NDM5NzQsImV4cCI6MTc0NDU0NzU3NH0.h_Wx5FZr9Y1b5epd4ZbetoBprKPebyiSKj1AkrvrEbY
+Content-Type: application/json
+
+{
+  "reason": "Card image is blurry"
+}
