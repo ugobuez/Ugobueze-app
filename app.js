@@ -6,13 +6,16 @@ import authRoute from './routes/auth.js';
 import giftCardRoutes from "./routes/giftcards.js";
 import userRoute from './routes/users.js';
 import adminRoutes from "./routes/admin.js";
-
+import 'dotenv/config';
 
 dotenv.config();
 
-mongoose.connect(process.env.MONGO_URI)
-    .then(() => console.log("MongoDB connected successfully"))
-    .catch((err) => console.error("MongoDB connection error:", err));
+const MONGODB_URI = process.env.MONGODB_URI;
+
+mongoose.connect(MONGODB_URI)
+  .then(() => console.log('Connected to MongoDB Atlas'))
+  .catch(err => console.error('MongoDB connection error:', err));
+
 
 const app = express();
 app.use(cors());
