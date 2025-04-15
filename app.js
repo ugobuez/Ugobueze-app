@@ -19,10 +19,16 @@ mongoose.connect(MONGODB_URI)
 
 const app = express();
 app.use(cors());
+
 // Enable CORS
 app.use(cors({
-    origin: "http://localhost:3000", // Allow requests from frontend
-    credentials: true // Allow cookies/auth headers
+    origin: [
+        "http://localhost:3000", 
+        "https://ugobueze-web.vercel.app"
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true
 }));
 
 app.use(express.json());
@@ -41,5 +47,5 @@ app.use((err, req, res, next) => {
 });
 
 
-const port = process.env.PORT || 3500;
+const port = process.env.PORT || 4500;
 app.listen(port, () => console.log(`Listening on port ${port}`));

@@ -16,13 +16,13 @@ POST http://localhost:3500/api/auth/loginNow
 Content-Type: application/json
 
 {
-  "email": "ugochukwumeshach54@gmail.com",
-  "password": "Askme@54"
+  "email": "ugochukwumeshach8@gmail.com",
+  "password": "Askme@8"
 }
 
 ### get giftcard
 GET http://localhost:3500/api/admin/redemptions
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2N2UzYzE0ZTMyNDBlYWQzNDNlNzM5MWQiLCJuYW1lIjoiVWdvY2h1a3d1IE1lc2hhY2giLCJlbWFpbCI6InVnb2NodWt3dW1lc2hhY2g1NEBnbWFpbC5jb20iLCJpc0FkbWluIjp0cnVlLCJpYXQiOjE3NDQ2NTkyMTcsImV4cCI6MTc0NDY2MjgxN30.BC6TTKPQkdn74y7yeE5QDUwALk0D2O7Dj9_7Tn1j8IA
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2N2ZlNDUwYTBiOTY1Yjg4YjNmZTc5YmMiLCJuYW1lIjoiVWdvY2h1a3d1IE1lc2hhY2giLCJlbWFpbCI6InVnb2NodWt3dW1lc2hhY2g4QGdtYWlsLmNvbSIsImlzQWRtaW4iOnRydWUsImlhdCI6MTc0NDcyMjEzNSwiZXhwIjoxNzQ0NzI1NzM1fQ.hEY0Q4zW5HkOze_0jA4hObXXsJP6Lvv3xj6BwMqxo8U
 ### Accept giftcard
 POST  http://localhost:3500/api/admin/redemptions/67e3c48395c4adce6d41c9c1/accept
 Authorization: Bearer  eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2N2UzYzE0ZTMyNDBlYWQzNDNlNzM5MWQiLCJpc0FkbWluIjp0cnVlLCJpYXQiOjE3NDQ1NTgzNTYsImV4cCI6MTc0NDU2MTk1Nn0.ZlleMpNaPNisXHVQvejNkO5u6l0PLbhy8jM3YNmTfTc
