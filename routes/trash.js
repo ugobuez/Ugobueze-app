@@ -1,66 +1,37 @@
-import express from 'express';
-import _ from 'lodash';
-import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { User, validateUser } from '../model/user.js';
-import { getUserDetails } from '../controller.js/userController.js';
-import { authenticateToken } from '../middlewave/auth.js';
 
-const router = express.Router();
+const extractToken = (req) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) return null;
+    return authHeader.split(' ')[1];
+};
 
-router.post('/', async (req, res) => {
-    const { error } = validateUser(req.body);
-    if (error) {
-        return res.status(400).send(error.details[0].message);
-    }
+const authenticateToken = (req, res, next) => {
+    const token = extractToken(req);
+    if (!token) return res.status(401).json({ message: 'Unauthorized: No token provided' });
 
-    let user = await User.findOne({ email: req.body.email });
-    if (user) {
-        return res.status(400).send('User already registered.');
-    }
-
-    user = new User({
-        name: req.body.name,
-        email: req.body.email,
-        password: req.body.password,
-        isAdmin: req.body.isAdmin === "true" || req.body.isAdmin === true // ✅ Convert string "true" to boolean
+    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+        if (err) return res.status(403).json({ message: 'Invalid token' });
+        req.user = decoded;  // Attach the decoded user information
+        next();
     });
-
-    const salt = await bcrypt.genSalt(10);
-    user.password = await bcrypt.hash(user.password, salt);
-
+};
+ const authenticateAdmin = (req, res, next) => {
+    const token = req.header("Authorization")?.replace("Bearer ", "");
+  
+    if (!token) return res.status(403).json({ message: "Access denied. No token provided." });
+  
     try {
-        await user.save();
-    } catch (err) {
-        return res.status(500).send('Error creating user: ' + err.message);
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      if (!decoded.isAdmin) {
+        return res.status(403).json({ message: "Access denied: Admins only" });
+      }
+  
+      req.user = decoded;
+      next();
+    } catch (ex) {
+      res.status(403).json({ message: "Invalid token" });
     }
+  };
 
-    const jwtPrivateKey = process.env.JWT_SECRET;
-    if (!jwtPrivateKey) {
-        return res.status(500).json({ message: "JWT secret is missing from environment variables." });
-    }
-
-    const payload = {
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        isAdmin: user.isAdmin // ✅ Include isAdmin in token
-    };
-
-    const token = jwt.sign(payload, jwtPrivateKey, { expiresIn: '1h' });
-    
-    res.send({ ..._.pick(user, ['_id', 'name', 'email', 'isAdmin']), token });
-});
-
-
-router.get('/me', authenticateToken, async (req, res) => {
-    try {
-        const user = await User.findById(req.user._id).select('-password');
-        if (!user) return res.status(404).send('User not found');
-        res.send(user);
-    } catch (err) {
-        res.status(500).send('Server error: ' + err.message);
-    }
-});
-
-export default router;
+export { authenticateToken, authenticateAdmin };

@@ -4,7 +4,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { User, validateUser } from "../model/user.js";
 import { authenticateToken } from "../middlewave/auth.js"; // Ensure this is imported
-
+import { getUserDetails } from '../controller.js/userController.js';
 const router = express.Router();
 
 router.post("/", async (req, res) => {
@@ -46,7 +46,7 @@ router.post("/", async (req, res) => {
 });
 
 // Assuming getUserDetails is defined elsewhere; remove if unused
-// router.get("/:name", getUserDetails);
+router.get("/:name", getUserDetails);
 
 // Get current user data
 router.get("/me", authenticateToken, async (req, res) => {
