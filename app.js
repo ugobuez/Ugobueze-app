@@ -1,7 +1,8 @@
 import express from 'express';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
-import cors from 'cors'; // Import cors
+import cors from 'cors';
+
 import authRoute from './routes/auth.js';
 import giftCardRoutes from "./routes/giftcards.js";
 import userRoute from './routes/users.js';
@@ -18,11 +19,9 @@ mongoose.connect(MONGODB_URI)
   .then(() => console.log('Connected to MongoDB Atlas'))
   .catch(err => console.error('MongoDB connection error:', err));
 
-
 const app = express();
-app.use(cors());
 
-// Enable CORS
+// ✅ Only use one cors() config (remove duplicate above)
 app.use(cors({
     origin: [
         "http://localhost:3000", 
@@ -41,14 +40,10 @@ app.use("/api/giftcards", giftCardRoutes);
 app.use("/api/admin", adminRoutes);
 app.use('/api/referrals', referralRoutes);
 
-
-
-
 app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).send('Something went wrong! Please try again later');
 });
-
 
 const port = process.env.PORT || 4500;
 app.listen(port, () => console.log(`Listening on port ${port}`));
