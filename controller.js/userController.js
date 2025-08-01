@@ -12,4 +12,20 @@ const getUserDetails = async (req, res) => {
   }
 };
 
+// routes/user.routes.js (or add to user controller)
+router.get('/users/:id/referrals', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    const count = await Referral.countDocuments({
+      referrerCode: user.referralCode,
+      isRedeemed: true,
+    });
+    const earnings = count * 3;
+    res.json({ count, earnings });
+  } catch (error) {
+    res.status(500).json({ error: 'Could not retrieve stats' });
+  }
+});
+
+
 export { getUserDetails };

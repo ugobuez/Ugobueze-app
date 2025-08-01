@@ -12,12 +12,12 @@ Content-Type: application/json
 }
 
 ### User Login
-POST http://localhost:3500/api/auth/loginNow
+POST http://localhost:4500/api/auth/loginNow
 Content-Type: application/json
 
 {
-  "email": "ugochukwumeshach8@gmail.com",
-  "password": "Askme@8"
+  "email": "ugobuezeweb@gmail.com",
+  "password": "ugobueze"
 }
 
 ### get giftcard
@@ -42,3 +42,41 @@ Content-Type: application/json
 {
   "reason": "Card image is blurry"
 }
+
+### Create a Referral
+POST http://localhost:4500/api/referrals
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2N2ZlNDUwYTBiOTY1Yjg4YjNmZTc5YmMiLCJuYW1lIjoiVWdvY2h1a3d1IE1lc2hhY2giLCJlbWFpbCI6InVnb2NodWt3dW1lc2hhY2g4QGdtYWlsLmNvbSIsImlzQWRtaW4iOnRydWUsImlhdCI6MTc1NDAyMDUzMywiZXhwIjoxNzU0MDI0MTMzfQ.yWBiZ7gncB4lzpZ5-0iNPXHAURi7T_gn4ravqD1ZkPI
+Content-Type: application/json
+
+{
+  "referrerCode": "REF123ABC",
+  "referredUserId": "64d1f9f5d9c0ab1234567890"
+}
+
+### create user
+POST http://localhost:4500/api/user
+Content-Type: application/json
+
+{
+  "name": "Charlotte Davis",
+  "email": "charlottedavis5671@gmaim.com",
+  "password": "Askme@5671",
+  "referredBy": "-Og1mR-d"
+}
+
+### Get User Details
+GET http://localhost:4500/api/user/me
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODhjNDJiM2M3MjkzODAzMGQ4NGUyYzIiLCJuYW1lIjoiVWdvY2h1a3d1IE1lc2hhY2giLCJlbWFpbCI6InVnb2J1ZXpld2ViQGdtYWlsLmNvbSIsImlzQWRtaW4iOmZhbHNlLCJpYXQiOjE3NTQwMjgxNjksImV4cCI6MTc1NDAzMTc2OX0._aykb0MrQd3kg2nNC9PRM3JVETNHMf066Mn_gptFBek
+
+
+### Get User Referrals
+GET http://localhost:4500/api/user/referrals
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODhjNDJiM2M3MjkzODAzMGQ4NGUyYzIiLCJuYW1lIjoiVWdvY2h1a3d1IE1lc2hhY2giLCJlbWFpbCI6InVnb2J1ZXpld2ViQGdtYWlsLmNvbSIsImlzQWRtaW4iOmZhbHNlLCJpYXQiOjE3NTQwMjgxNjksImV4cCI6MTc1NDAzMTc2OX0._aykb0MrQd3kg2nNC9PRM3JVETNHMf066Mn_gptFBek
+
+### Get Referral Leaderboard
+GET http://localhost:4500/api/referrals/leaderboard
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODhjNDJiM2M3MjkzODAzMGQ4NGUyYzIiLCJuYW1lIjoiVWdvY2h1a3d1IE1lc2hhY2giLCJlbWFpbCI6InVnb2J1ZXpld2ViQGdtYWlsLmNvbSIsImlzQWRtaW4iOmZhbHNlLCJpYXQiOjE3NTQwMjM1NDUsImV4cCI6MTc1NDAyNzE0NX0.b33lcGLPdVN_Ir-ibbJL6AXtgFxGjQAUuMux6cE65NY
+
+### Get Referral Stats
+GET http://localhost:4500/api/referrals/stats/-Og1mR-d
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODhjNDJiM2M3MjkzODAzMGQ4NGUyYzIiLCJuYW1lIjoiVWdvY2h1a3d1IE1lc2hhY2giLCJlbWFpbCI6InVnb2J1ZXpld2ViQGdtYWlsLmNvbSIsImlzQWRtaW4iOmZhbHNlLCJpYXQiOjE3NTQwMjM1NDUsImV4cCI6MTc1NDAyNzE0NX0.b33lcGLPdVN_Ir-ibbJL6AXtgFxGjQAUuMux6cE65NY

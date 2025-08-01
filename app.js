@@ -6,6 +6,8 @@ import authRoute from './routes/auth.js';
 import giftCardRoutes from "./routes/giftcards.js";
 import userRoute from './routes/users.js';
 import adminRoutes from "./routes/admin.js";
+import referralRoutes from './routes/referral.js';
+
 import 'dotenv/config';
 
 dotenv.config();
@@ -37,6 +39,7 @@ app.use('/api/user', userRoute);
 app.use('/api/auth', authRoute);
 app.use("/api/giftcards", giftCardRoutes);
 app.use("/api/admin", adminRoutes);
+app.use('/api/referrals', referralRoutes);
 
 
 
