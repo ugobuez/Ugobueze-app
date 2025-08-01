@@ -12,7 +12,7 @@ router.get("/", (req, res) => {
   res.send("User signup endpoint is live. Use POST to register.");
 });
 
-// ✅ Register new user with optional referral
+// ✅ Register new user with referral update
 router.post("/", async (req, res) => {
   const { error } = validateUser(req.body);
   if (error) return res.status(400).send(error.details[0].message);
@@ -25,25 +25,31 @@ router.post("/", async (req, res) => {
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(password, salt);
 
+  // Generate a referral code for the new user
+  const referralCode = Math.random().toString(36).substring(2, 8);
+
   const user = new User({
     name,
     email,
     password: hashedPassword,
     phone,
-    referredBy
+    referralCode,
+    referredBy,
   });
 
   try {
-    await user.save();
-
-    // ✅ Update referrer's referral list
+    // ✅ If user was referred, reward the referrer
     if (referredBy) {
       const referrer = await User.findOne({ referralCode: referredBy });
       if (referrer) {
         referrer.referrals.push(user._id);
+        referrer.referralEarnings += 3;
+        referrer.balance += 3;
         await referrer.save();
       }
     }
+
+    await user.save();
   } catch (err) {
     return res.status(500).send("Error creating user: " + err.message);
   }
@@ -53,7 +59,7 @@ router.post("/", async (req, res) => {
       _id: user._id,
       name: user.name,
       email: user.email,
-      isAdmin: user.isAdmin
+      isAdmin: user.isAdmin,
     },
     process.env.JWT_SECRET,
     { expiresIn: "1h" }
@@ -65,7 +71,7 @@ router.post("/", async (req, res) => {
     email: user.email,
     referralCode: user.referralCode,
     referredBy: user.referredBy,
-    token
+    token,
   });
 });
 
@@ -95,7 +101,7 @@ router.get("/referrals/leaderboard", async (req, res) => {
     const formatted = leaderboard.map(user => ({
       name: user.name,
       referralCount: user.referrals.length,
-      referralEarnings: user.referralEarnings
+      referralEarnings: user.referralEarnings,
     }));
 
     res.json(formatted);
@@ -114,7 +120,7 @@ router.get("/referrals/stats/:referralCode", async (req, res) => {
     res.json({
       name: user.name,
       referralCount: user.referrals.length,
-      referralEarnings: user.referralEarnings
+      referralEarnings: user.referralEarnings,
     });
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch stats" });

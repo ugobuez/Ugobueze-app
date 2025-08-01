@@ -59,7 +59,7 @@ Content-Type: application/json
 
 {
   "name": "Charlotte Davis",
-  "email": "charlottedavis5671@gmaim.com",
+  "email": "charlottedavis48@gmail.com",
   "password": "Askme@5671",
   "referredBy": "-Og1mR-d"
 }
@@ -80,3 +80,19 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODhjNDJiM
 ### Get Referral Stats
 GET http://localhost:4500/api/referrals/stats/-Og1mR-d
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODhjNDJiM2M3MjkzODAzMGQ4NGUyYzIiLCJuYW1lIjoiVWdvY2h1a3d1IE1lc2hhY2giLCJlbWFpbCI6InVnb2J1ZXpld2ViQGdtYWlsLmNvbSIsImlzQWRtaW4iOmZhbHNlLCJpYXQiOjE3NTQwMjM1NDUsImV4cCI6MTc1NDAyNzE0NX0.b33lcGLPdVN_Ir-ibbJL6AXtgFxGjQAUuMux6cE65NY
+
+### Redeem Referral
+PATCH http://localhost:4500/api/referrals/redeem
+Content-Type: application/json
+
+{
+  "referredUserId": "688c5c4f101edb91048fd52b"
+}
+
+#### Redeem Referral
+PATCH http://localhost:4500/api/referrals/redeem
+Content-Type: application/json
+
+{
+  "referredUserId": "688c54ee94ea23e3e0c1f3d1"
+}

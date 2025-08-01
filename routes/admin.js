@@ -2,7 +2,7 @@ import express from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { User } from "../model/user.js";
-import { Redemption } from "../model/redeem.js";
+import {Redemption }from "../model/redeem.js";
 import GiftCard from "../model/giftcard.js";
 import Referral from "../model/referral.js";
 import { authenticateAdmin } from "../middlewave/auth.js";
