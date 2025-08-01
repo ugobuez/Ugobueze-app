@@ -7,12 +7,17 @@ import { authenticateToken } from "../middlewave/auth.js";
 
 const router = express.Router();
 
+// ✅ Health check: GET /api/user
+router.get("/", (req, res) => {
+  res.send("User signup endpoint is live. Use POST to register.");
+});
+
 // ✅ Register new user with optional referral
 router.post("/", async (req, res) => {
   const { error } = validateUser(req.body);
   if (error) return res.status(400).send(error.details[0].message);
 
-  const { name, email, password, referredBy } = req.body;
+  const { name, email, password, phone, referredBy } = req.body;
 
   let existingUser = await User.findOne({ email });
   if (existingUser) return res.status(400).send("User already registered.");
@@ -24,6 +29,7 @@ router.post("/", async (req, res) => {
     name,
     email,
     password: hashedPassword,
+    phone,
     referredBy
   });
 
