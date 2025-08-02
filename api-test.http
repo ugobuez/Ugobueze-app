@@ -16,13 +16,15 @@ POST http://localhost:4500/api/auth/loginNow
 Content-Type: application/json
 
 {
-  "email": "ugobuezeweb@gmail.com",
-  "password": "ugobueze"
+  "email": "ugochukwumeshach8@gmail.com",
+  "password": "Askme@8"
 }
 
 ### get giftcard
-GET http://localhost:3500/api/admin/redemptions
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2N2ZlNDUwYTBiOTY1Yjg4YjNmZTc5YmMiLCJuYW1lIjoiVWdvY2h1a3d1IE1lc2hhY2giLCJlbWFpbCI6InVnb2NodWt3dW1lc2hhY2g4QGdtYWlsLmNvbSIsImlzQWRtaW4iOnRydWUsImlhdCI6MTc0NDcyMjEzNSwiZXhwIjoxNzQ0NzI1NzM1fQ.hEY0Q4zW5HkOze_0jA4hObXXsJP6Lvv3xj6BwMqxo8U
+GET http://localhost:4500/api/admin/redemptions
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2N2ZlNDUwYTBiOTY1Yjg4YjNmZTc5YmMiLCJuYW1lIjoiVWdvY2h1a3d1IE1lc2hhY2giLCJlbWFpbCI6InVnb2NodWt3dW1lc2hhY2g4QGdtYWlsLmNvbSIsImlzQWRtaW4iOnRydWUsImlhdCI6MTc1NDA5ODg3NiwiZXhwIjoxNzU0MTAyNDc2fQ.VPRmCdZBa7SfVYbCqaXC57QO8Gnyw2LzJenTc6ZnwZU
+
+
 ### Accept giftcard
 POST  http://localhost:3500/api/admin/redemptions/67e3c48395c4adce6d41c9c1/accept
 Authorization: Bearer  eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2N2UzYzE0ZTMyNDBlYWQzNDNlNzM5MWQiLCJpc0FkbWluIjp0cnVlLCJpYXQiOjE3NDQ1NTgzNTYsImV4cCI6MTc0NDU2MTk1Nn0.ZlleMpNaPNisXHVQvejNkO5u6l0PLbhy8jM3YNmTfTc
@@ -66,7 +68,7 @@ Content-Type: application/json
 
 ### Get User Details
 GET http://localhost:4500/api/user/me
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODhjNDJiM2M3MjkzODAzMGQ4NGUyYzIiLCJuYW1lIjoiVWdvY2h1a3d1IE1lc2hhY2giLCJlbWFpbCI6InVnb2J1ZXpld2ViQGdtYWlsLmNvbSIsImlzQWRtaW4iOmZhbHNlLCJpYXQiOjE3NTQwMjgxNjksImV4cCI6MTc1NDAzMTc2OX0._aykb0MrQd3kg2nNC9PRM3JVETNHMf066Mn_gptFBek
+Authorization: Bearer  eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2N2UzYzE0ZTMyNDBlYWQzNDNlNzM5MWQiLCJpc0FkbWluIjp0cnVlLCJpYXQiOjE3NDQ1NTgzNTYsImV4cCI6MTc0NDU2MTk1Nn0.ZlleMpNaPNisXHVQvejNkO5u6l0PLbhy8jM3YNmTfTc
 
 
 ### Get User Referrals
@@ -99,5 +101,69 @@ Content-Type: application/json
 
 
 ### Get Referral Code
-GET http://localhost:4500/api/referral/code/688c42b3c72938030d84e2c2
+GET http://localhost:4500/api/referrals/code/688c42b3c72938030d84e2c2
 Content-Type: application/json
+
+### 1. Admin Login
+POST http://localhost:4500/api/auth/loginNow
+Content-Type: application/json
+
+{
+  "email": "ugochukwumeshach8@gmail.com",
+  "password": "Askme@8"
+}
+
+### 2. Get All Gift Cards
+GET http://localhost:4500/api/giftcards
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2N2ZlNDUwYTBiOTY1Yjg4YjNmZTc5YmMiLCJuYW1lIjoiVWdvY2h1a3d1IE1lc2hhY2giLCJlbWFpbCI6InVnb2NodWt3dW1lc2hhY2g4QGdtYWlsLmNvbSIsImlzQWRtaW4iOnRydWUsImlhdCI6MTc1NDEwMTQwNSwiZXhwIjoxNzU0MTA1MDA1fQ.vAcjg7DAfDyclnSevRjSXItAXc8VxRhM8AoffoVp0ME
+
+### 3. Create Gift Card (Admin)
+POST http://localhost:4500/api/giftcards
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2N2ZlNDUwYTBiOTY1Yjg4YjNmZTc5YmMiLCJuYW1lIjoiVWdvY2h1a3d1IE1lc2hhY2giLCJlbWFpbCI6InVnb2NodWt3dW1lc2hhY2g4QGdtYWlsLmNvbSIsImlzQWRtaW4iOnRydWUsImlhdCI6MTc1NDA5ODg3NiwiZXhwIjoxNzU0MTAyNDc2fQ.VPRmCdZBa7SfVYbCqaXC57QO8Gnyw2LzJenTc6ZnwZU
+Content-Type: application/json
+
+{
+  "name": "Amazon $50",
+  "brand": "Amazon",
+  "value": 150,
+  "currency": "USD",
+  "image": "https://res.cloudinary.com/drbiup2zg/image/upload/v1742984827/razer_kqt8dh.webp"
+}
+
+### 5. Get All Redemptions (Admin)
+
+GET http://localhost:4500/api/admin/redemptions
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2N2ZlNDUwYTBiOTY1Yjg4YjNmZTc5YmMiLCJuYW1lIjoiVWdvY2h1a3d1IE1lc2hhY2giLCJlbWFpbCI6InVnb2NodWt3dW1lc2hhY2g4QGdtYWlsLmNvbSIsImlzQWRtaW4iOnRydWUsImlhdCI6MTc1NDEwMjQ5NCwiZXhwIjoxNzU0MTA2MDk0fQ.dafZbHtyKT6IkRulyOSR8srafnVOz8yum8gQLzlE_SI
+
+
+
+
+
+### Redeem Gift Card (with image upload)
+POST http://localhost:4500/api/giftcards/688d791dc55099a9c7a1490e/redeem
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2N2ZlNDUwYTBiOTY1Yjg4YjNmZTc5YmMiLCJuYW1lIjoiVWdvY2h1a3d1IE1lc2hhY2giLCJlbWFpbCI6InVnb2NodWt3dW1lc2hhY2g4QGdtYWlsLmNvbSIsImlzQWRtaW4iOnRydWUsImlhdCI6MTc1NDEwMjkyMCwiZXhwIjoxNzU0MTA2NTIwfQ.Leh4tob-TdPrV6dU9drLBhrb1IbEBYCWYo-lDQk6Gc8
+Content-Type: multipart/form-data
+
+amount=350
+image=@/Users/apple/Downloads/IMG_2188.jpg
+
+### Submit Gift Card Redemption (image upload)
+POST http://localhost:4500/api/giftcards/688d791dc55099a9c7a1490e/redeem
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2N2ZlNDUwYTBiOTY1Yjg4YjNmZTc5YmMiLCJuYW1lIjoiVWdvY2h1a3d1IE1lc2hhY2giLCJlbWFpbCI6InVnb2NodWt3dW1lc2hhY2g4QGdtYWlsLmNvbSIsImlzQWRtaW4iOnRydWUsImlhdCI6MTc1NDEwMjkyMCwiZXhwIjoxNzU0MTA2NTIwfQ.Leh4tob-TdPrV6dU9drLBhrb1IbEBYCWYo-lDQk6Gc8
+
+Content-Type: multipart/form-data
+
+giftCardId=688d791dc55099a9c7a1490e
+amount=350
+image=@/Users/apple/Downloads/IMG_2188.jpg
+
+
+### Submit Gift Card Redemption (image upload)
+POST http://localhost:4500/api/giftcards/688d791dc55099a9c7a1490e/redeem
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2N2ZlNDUwYTBiOTY1Yjg4YjNmZTc5YmMiLCJuYW1lIjoiVWdvY2h1a3d1IE1lc2hhY2giLCJlbWFpbCI6InVnb2NodWt3dW1lc2hhY2g4QGdtYWlsLmNvbSIsImlzQWRtaW4iOnRydWUsImlhdCI6MTc1NDEwMjkyMCwiZXhwIjoxNzU0MTA2NTIwfQ.Leh4tob-TdPrV6dU9drLBhrb1IbEBYCWYo-lDQk6Gc8
+
+Content-Type: multipart/form-data
+
+giftCardId=688d791dc55099a9c7a1490e
+amount=350
+image=@/Users/apple/Downloads/IMG_2188.jpg

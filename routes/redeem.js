@@ -1,4 +1,6 @@
 import express from "express";
+import multer from "multer";
+import { v2 as cloudinary } from "cloudinary";
 import Redemption from "../model/redeem.js";
 import GiftCard from "../model/giftcard.js";
 import User from "../model/user.js";
@@ -8,25 +10,55 @@ import authMiddleware from "../middlewave/auth.js";
 const router = express.Router();
 const REFERRAL_BONUS = Number(process.env.REFERRAL_BONUS || 3);
 
-// Submit a redemption request
-router.post("/", authMiddleware(), async (req, res) => {
+// Configure Multer (for in-memory file uploads)
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
+
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+// Submit a redemption request with image upload
+router.post("/", authMiddleware(), upload.single("image"), async (req, res) => {
   try {
-    const { giftCardId, imageUrl } = req.body;
+    const { giftCardId, amount } = req.body;
+
+    if (!req.file) {
+      return res.status(400).json({ error: "Image is required" });
+    }
 
     const giftCard = await GiftCard.findById(giftCardId);
     if (!giftCard) return res.status(404).json({ error: "Gift card not found" });
+
+    // Upload image to Cloudinary
+    const uploadResult = await new Promise((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        { resource_type: "image", folder: "giftcards" },
+        (error, result) => {
+          if (error) reject(error);
+          else resolve(result);
+        }
+      );
+      stream.end(req.file.buffer);
+    });
+
+    const imageUrl = uploadResult.secure_url;
 
     const redemption = new Redemption({
       userId: req.user.userId,
       giftCardId,
       imageUrl,
-      amount: giftCard.amount || 0,
+      amount: amount || giftCard.amount || 0,
     });
 
     await redemption.save();
     res.status(201).json({ message: "Redemption request submitted" });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error("Redeem error:", err);
+    res.status(500).json({ error: "Something went wrong!" });
   }
 });
 

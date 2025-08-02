@@ -1,12 +1,13 @@
 import express from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import mongoose from "mongoose";
+
 import { User } from "../model/user.js";
-import {Redemption }from "../model/redeem.js";
+import { Redemption } from "../model/redeem.js";
 import GiftCard from "../model/giftcard.js";
 import Referral from "../model/referral.js";
 import { authenticateAdmin } from "../middlewave/auth.js";
-import mongoose from "mongoose";
 
 const router = express.Router();
 const REFERRAL_BONUS = Number(process.env.REFERRAL_BONUS || 3);
@@ -38,19 +39,15 @@ router.post("/login", async (req, res) => {
   }
 });
 
-// Get all redemptions
+// ✅ Get all redemptions (Admin) — fixed to return 200 even if empty
 router.get("/redemptions", authenticateAdmin, async (req, res) => {
   try {
     const redemptions = await Redemption.find()
       .populate("userId", "name email")
-      .populate("giftCardId", "name amount")
+      .populate("giftCardId", "name brand value currency")
       .sort({ createdAt: -1 });
 
-    if (!redemptions.length) {
-      return res.status(404).json({ message: "No redemptions found" });
-    }
-
-    res.json(redemptions);
+    res.json(redemptions); // ✅ Always return 200, even if empty
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -60,15 +57,24 @@ router.get("/redemptions", authenticateAdmin, async (req, res) => {
 router.post("/redemptions/:id/approve", authenticateAdmin, async (req, res) => {
   try {
     const { id } = req.params;
-    if (!mongoose.Types.ObjectId.isValid(id)) return res.status(400).json({ error: "Invalid ID" });
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ error: "Invalid ID" });
+    }
 
     const redemption = await Redemption.findById(id);
-    if (!redemption) return res.status(404).json({ error: "Redemption not found" });
+    if (!redemption) {
+      return res.status(404).json({ error: "Redemption not found" });
+    }
 
-    if (redemption.status === "approved") return res.status(400).json({ error: "Already approved" });
+    if (redemption.status === "approved") {
+      return res.status(400).json({ error: "Already approved" });
+    }
 
     const user = await User.findById(redemption.userId);
-    if (!user) return res.status(404).json({ error: "User not found" });
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
 
     const giftCard = await GiftCard.findById(redemption.giftCardId);
     const amount = giftCard?.amount || redemption.amount || 0;
@@ -79,7 +85,6 @@ router.post("/redemptions/:id/approve", authenticateAdmin, async (req, res) => {
     user.balance += amount;
     await user.save();
 
-    // Apply referral bonus
     if (user.referredBy) {
       const referral = await Referral.findOne({
         referrerCode: user.referredBy,
@@ -111,12 +116,18 @@ router.post("/redemptions/:id/reject", authenticateAdmin, async (req, res) => {
     const { id } = req.params;
     const { reason } = req.body;
 
-    if (!mongoose.Types.ObjectId.isValid(id)) return res.status(400).json({ error: "Invalid ID" });
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ error: "Invalid ID" });
+    }
 
     const redemption = await Redemption.findById(id);
-    if (!redemption) return res.status(404).json({ error: "Redemption not found" });
+    if (!redemption) {
+      return res.status(404).json({ error: "Redemption not found" });
+    }
 
-    if (redemption.status === "rejected") return res.status(400).json({ error: "Already rejected" });
+    if (redemption.status === "rejected") {
+      return res.status(400).json({ error: "Already rejected" });
+    }
 
     redemption.status = "rejected";
     redemption.reason = reason || "No reason provided";
