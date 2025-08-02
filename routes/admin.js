@@ -2,15 +2,28 @@ import express from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
+import multer from "multer";
+import { v2 as cloudinary } from "cloudinary";
 
 import { User } from "../model/user.js";
 import { Redemption } from "../model/redeem.js";
 import GiftCard from "../model/giftcard.js";
 import Referral from "../model/referral.js";
-import { authenticateAdmin } from "../middlewave/auth.js";
+import { authenticateAdmin, authenticateToken } from "../middlewave/auth.js";
 
 const router = express.Router();
 const REFERRAL_BONUS = Number(process.env.REFERRAL_BONUS || 3);
+
+// Configure Multer for file uploads
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
+
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 // Admin login
 router.post("/login", async (req, res) => {
@@ -39,19 +52,6 @@ router.post("/login", async (req, res) => {
   }
 });
 
-// ✅ Get all redemptions (Admin) — fixed to return 200 even if empty
-router.get("/redemptions", authenticateAdmin, async (req, res) => {
-  try {
-    const redemptions = await Redemption.find()
-      .populate("userId", "name email")
-      .populate("giftCardId", "name brand value currency")
-      .sort({ createdAt: -1 });
-
-    res.json(redemptions); // ✅ Always return 200, even if empty
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
 
 // Approve redemption
 router.post("/redemptions/:id/approve", authenticateAdmin, async (req, res) => {
@@ -138,5 +138,21 @@ router.post("/redemptions/:id/reject", authenticateAdmin, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+// Get all redemptions (Admin)
+// Get all redemptions (Admin)
+router.get("/redemptions", authenticateAdmin, async (req, res) => {
+  try {
+    const redemptions = await Redemption.find()
+      .populate("userId", "name email")
+      .populate("giftCardId", "name brand value currency")
+      .sort({ createdAt: -1 });
+    res.json(redemptions);
+  } catch (err) {
+    console.error('Error fetching redemptions:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 
 export default router;

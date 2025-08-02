@@ -5,6 +5,7 @@ import multer from "multer";
 import { v2 as cloudinary } from "cloudinary";
 import dotenv from "dotenv";
 import streamifier from "streamifier";
+import { Redemption } from "../model/redeem.js";
 
 dotenv.config();
 
@@ -78,8 +79,9 @@ router.delete("/:id", authenticateAdmin, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+// ... other imports and code ...
 
-// 🟠 Upload proof of redemption (User)
+// 🟠 Redeem a gift card (User)
 router.post("/:id/redeem", authenticateToken, upload.single("image"), async (req, res) => {
   try {
     const giftCard = await GiftCard.findById(req.params.id);
@@ -87,84 +89,38 @@ router.post("/:id/redeem", authenticateToken, upload.single("image"), async (req
 
     if (!req.file) return res.status(400).json({ error: "Image is required" });
 
-    console.log("Incoming request body:", req.body);
-    console.log("Uploaded file:", req.file);
-
     const { amount } = req.body;
     if (!amount || isNaN(amount) || parseFloat(amount) <= 0) {
       return res.status(400).json({ error: "Valid amount greater than zero is required" });
     }
 
-    console.log("Current redemptions:", giftCard.redemptions);
-
-    giftCard.redemptions = giftCard.redemptions.filter((redemption) => {
-      const isValid = redemption.amount != null && !isNaN(redemption.amount);
-      if (!isValid) {
-        console.warn("Removing invalid redemption:", redemption);
-      }
-      return isValid;
-    });
-
-    const uploadFromBuffer = () => {
+    const uploadToCloudinary = () => {
       return new Promise((resolve, reject) => {
-        let attempts = 0;
-        const maxAttempts = 3;
-        const timeoutMs = 30000;
-
-        const attemptUpload = () => {
-          attempts += 1;
-          const stream = cloudinary.uploader.upload_stream(
-            { timeout: timeoutMs },
-            (error, result) => {
-              if (error) {
-                if (error.name === "TimeoutError" && attempts < maxAttempts) {
-                  console.warn(`Upload attempt ${attempts} failed, retrying...`);
-                  return attemptUpload();
-                }
-                reject(error);
-              } else {
-                resolve(result);
-              }
-            }
-          );
-          streamifier.createReadStream(req.file.buffer).pipe(stream);
-        };
-
-        attemptUpload();
+        const stream = cloudinary.uploader.upload_stream({ timeout: 30000 }, (error, result) => {
+          if (error) return reject(error);
+          resolve(result);
+        });
+        streamifier.createReadStream(req.file.buffer).pipe(stream);
       });
     };
 
-    const result = await uploadFromBuffer();
+    const result = await uploadToCloudinary();
 
-    const redemption = {
+    const redemption = new Redemption({
       userId: req.user._id,
+      giftCardId: giftCard._id,
+      cardType: giftCard.name, // Add cardType required by schema
       image: result.secure_url,
       amount: parseFloat(amount),
       status: "pending",
-    };
-
-    console.log("Redemption to save:", redemption);
-
-    giftCard.redemptions.push(redemption);
-    console.log("Redemptions after push:", giftCard.redemptions);
-
-    await giftCard.save();
-
-    res.status(201).json({ message: "Redemption request submitted", redemption });
-  } catch (err) {
-    console.error("Error submitting redemption request:", {
-      message: err.message,
-      name: err.name,
-      http_code: err.http_code,
-      stack: err.stack,
     });
-    if (err.name === "ValidationError") {
-      res.status(400).json({ error: `Validation failed: ${err.message}` });
-    } else if (err.name === "TimeoutError") {
-      res.status(504).json({ error: "Image upload timed out, please try again" });
-    } else {
-      res.status(500).json({ error: "Server error, please try again later" });
-    }
+
+    await redemption.save();
+
+    res.status(201).json({ message: "Redemption submitted", redemption });
+  } catch (err) {
+    console.error("Redemption error:", err);
+    res.status(500).json({ error: "Server error, please try again later" });
   }
 });
 

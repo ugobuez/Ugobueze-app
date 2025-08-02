@@ -22,43 +22,37 @@ cloudinary.config({
 });
 
 // Submit a redemption request with image upload
-router.post("/", authMiddleware(), upload.single("image"), async (req, res) => {
-  try {
-    const { giftCardId, amount } = req.body;
 
-    if (!req.file) {
-      return res.status(400).json({ error: "Image is required" });
+// Submit a redemption
+router.post("/:id/redeem", authenticateUser, async (req, res) => {
+  try {
+    const giftCardId = req.params.id;
+
+    if (!mongoose.Types.ObjectId.isValid(giftCardId)) {
+      return res.status(400).json({ error: "Invalid gift card ID" });
     }
 
     const giftCard = await GiftCard.findById(giftCardId);
-    if (!giftCard) return res.status(404).json({ error: "Gift card not found" });
+    if (!giftCard) {
+      return res.status(404).json({ error: "Gift card not found" });
+    }
 
-    // Upload image to Cloudinary
-    const uploadResult = await new Promise((resolve, reject) => {
-      const stream = cloudinary.uploader.upload_stream(
-        { resource_type: "image", folder: "giftcards" },
-        (error, result) => {
-          if (error) reject(error);
-          else resolve(result);
-        }
-      );
-      stream.end(req.file.buffer);
-    });
-
-    const imageUrl = uploadResult.secure_url;
+    const { image, amount } = req.body;
 
     const redemption = new Redemption({
-      userId: req.user.userId,
-      giftCardId,
-      imageUrl,
-      amount: amount || giftCard.amount || 0,
+      userId: req.user._id,
+      cardType: giftCard.brand || giftCard.name,
+      amount: amount || giftCard.value,
+      image,
+      giftCardId: giftCard._id, // ✅ FIXED: Save reference to GiftCard
+      referredBy: req.user.referredBy || null,
     });
 
     await redemption.save();
-    res.status(201).json({ message: "Redemption request submitted" });
+
+    res.status(201).json({ message: "Redemption submitted successfully", redemption });
   } catch (err) {
-    console.error("Redeem error:", err);
-    res.status(500).json({ error: "Something went wrong!" });
+    res.status(500).json({ error: err.message });
   }
 });
 
