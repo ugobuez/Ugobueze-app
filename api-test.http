@@ -96,3 +96,8 @@ Content-Type: application/json
 {
   "referredUserId": "688c54ee94ea23e3e0c1f3d1"
 }
+
+
+### Get Referral Code
+GET http://localhost:4500/api/referral/code/688c42b3c72938030d84e2c2
+Content-Type: application/json
