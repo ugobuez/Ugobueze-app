@@ -2,93 +2,112 @@ import express from 'express';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import cors from 'cors';
-import { v2 as cloudinary } from 'cloudinary';
+import { v2 as cloudinary } from 'cloudinary'; // ✅ Correct Cloudinary import
 
 // Load environment variables
-dotenv.config({ path: '/Users/apple/Desktop/ugobtc-api/.env' });
-console.log('Environment variables:', {
-  MONGODB_URI: process.env.MONGODB_URI,
-  JWT_SECRET: process.env.JWT_SECRET,
-  CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME,
-  CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY,
-  CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET ? '[REDACTED]' : undefined,
-  REFERRAL_BONUS: process.env.REFERRAL_BONUS,
-});
+dotenv.config();
 
 // Configure Cloudinary
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
+  secure: true,
 });
-console.log('✅ Cloudinary configured globally');
 
-// MongoDB Connection
-mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log('✅ Connected to MongoDB Atlas'))
-  .catch((err) => console.error('❌ MongoDB connection error:', err));
+export const cloudinaryInstance = cloudinary; // ✅ Correct export
 
-// Initialize Express App
+// MongoDB Connection with proper settings
+mongoose.connect(process.env.MONGODB_URI, {
+  serverSelectionTimeoutMS: 5000,
+  socketTimeoutMS: 45000,
+  retryWrites: true,
+  retryReads: true,
+  w: 'majority'
+})
+.then(() => console.log('✅ Connected to MongoDB'))
+.catch(err => console.error('❌ MongoDB connection error:', err));
+
+// Mongoose connection events
+mongoose.connection.on('connected', () => {
+  console.log('Mongoose connected to DB');
+});
+
+mongoose.connection.on('error', (err) => {
+  console.error('Mongoose connection error:', err);
+});
+
+mongoose.connection.on('disconnected', () => {
+  console.log('Mongoose disconnected from DB');
+});
+
+// Initialize Express
 const app = express();
 
 // CORS Configuration
-const allowedOrigins = [
-  'http://localhost:3000',
-  'https://ugobueze-web.vercel.app',
-  'https://ugobueze-app.onrender.com', // Added to allow frontend requests
-];
-
 app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
+  origin: [
+    'http://localhost:3000',
+    'https://ugobueze-web.vercel.app',
+    'https://ugobueze-app.onrender.com'
+  ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-api-key']
 }));
 
 // Body parser
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Routes
 import authRoute from './routes/auth.js';
 import giftCardRoutes from './routes/giftcards.js';
 import userRoute from './routes/users.js';
-import adminRoutes from './routes/admin.js';
-import referralRoute from './routes/referral.js';
 
-app.use('/api/users', userRoute);
 app.use('/api/auth', authRoute);
+app.use('/api/users', userRoute);
 app.use('/api/giftcards', giftCardRoutes);
-app.use('/api/admin', adminRoutes);
-app.use('/api/referrals', referralRoute);
 
-// Health check
-app.get('/api', (req, res) => {
-  res.status(200).json({ message: 'API is working' });
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.status(200).json({ 
+    success: true,
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    services: {
+      database: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
+      cloudinary: 'configured'
+    }
+  });
 });
 
-// Fallback route
-app.use((req, res, next) => {
-  res.status(404).json({ error: 'Endpoint not found' });
+// Referral redirection
+app.get('/signup', (req, res) => {
+  const { code } = req.query;
+  return res.redirect(`https://ugobueze-web.vercel.app/signup?code=${code}`);
 });
 
-// Global Error Handler
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({ 
+    error: "Not found",
+    message: "Endpoint not found" 
+  });
+});
+
+// Error handling middleware
 app.use((err, req, res, next) => {
-  console.error('❌ Unhandled error:', err.stack);
-  if (res.headersSent) return next(err);
-  res.status(500).json({ error: 'Something went wrong! Please try again later.' });
+  console.error('❌ Server error:', err.stack);
+  res.status(500).json({ 
+    error: "Server error",
+    message: "Internal server error",
+    details: process.env.NODE_ENV === 'development' ? err.message : null
+  });
 });
 
-// Start Server
+// Start server
 const PORT = process.env.PORT || 4500;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
-
-// Export cloudinary for use in other files
-export { cloudinary };

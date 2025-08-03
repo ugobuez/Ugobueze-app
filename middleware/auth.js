@@ -1,12 +1,14 @@
-// /middleware/auth.js
-import jwt from 'jsonwebtoken';
+import jwt from "jsonwebtoken";
 
 export function authenticateToken(req, res, next) {
-  const authHeader = req.header('Authorization');
-  const token = authHeader && authHeader.split(' ')[1]; // Expects "Bearer <token>"
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1];
 
   if (!token) {
-    return res.status(401).json({ message: 'Access denied. No token provided.' });
+    return res.status(401).json({ 
+      error: "Access denied",
+      message: "No token provided" 
+    });
   }
 
   try {
@@ -14,16 +16,20 @@ export function authenticateToken(req, res, next) {
     req.user = decoded;
     next();
   } catch (err) {
-    console.error('Token verification failed:', err.message);
-    res.status(400).json({ message: 'Invalid token.' });
+    console.error("JWT Verification Error:", err.message);
+    return res.status(403).json({ 
+      error: "Invalid token",
+      message: "Token verification failed" 
+    });
   }
 }
 
 export function authenticateAdmin(req, res, next) {
-  authenticateToken(req, res, () => {
-    if (!req.user?.isAdmin) {
-      return res.status(403).json({ message: 'Access denied: Admins only.' });
-    }
-    next();
-  });
+  if (!req.user?.isAdmin) {
+    return res.status(403).json({ 
+      error: "Access denied",
+      message: "Admin privileges required" 
+    });
+  }
+  next();
 }
