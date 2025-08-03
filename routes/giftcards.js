@@ -1,8 +1,9 @@
+// routes/giftcards.js
 import express from 'express';
 import multer from 'multer';
-import { v2 as cloudinary } from 'cloudinary';
 import streamifier from 'streamifier';
 import mongoose from 'mongoose';
+import { v2 as cloudinary } from 'cloudinary';
 import { authenticateToken } from '../middleware/auth.js';
 import { Redeem } from '../model/redeem.js';
 import { User } from '../model/user.js';
@@ -11,7 +12,7 @@ import GiftCard from '../model/giftcard.js';
 
 const router = express.Router();
 
-// Multer config for memory storage
+// Multer config
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
@@ -22,14 +23,33 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// POST /api/redeem — submit a redemption
-router.post('/', authenticateToken, upload.single('image'), async (req, res) => {
+// GET /api/giftcards/:id - Fetch gift card by ID
+router.get('/:id', async (req, res) => {
+  const { id } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ error: 'Invalid Gift Card ID format' });
+  }
+
+  try {
+    const giftCard = await GiftCard.findById(id);
+    if (!giftCard) {
+      return res.status(404).json({ error: 'Gift card not found' });
+    }
+    res.json(giftCard);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error while fetching gift card' });
+  }
+});
+
+// POST /api/giftcards/redeem - Submit a redemption
+router.post('/redeem', authenticateToken, upload.single('image'), async (req, res) => {
   try {
     const { amount, giftCardId } = req.body;
 
     if (!req.file) return res.status(400).json({ error: 'Image is required' });
     if (!giftCardId) return res.status(400).json({ error: 'giftCardId is required' });
-
     if (!mongoose.Types.ObjectId.isValid(giftCardId)) {
       return res.status(400).json({ error: 'Invalid giftCardId' });
     }
@@ -66,8 +86,8 @@ router.post('/', authenticateToken, upload.single('image'), async (req, res) => 
   }
 });
 
-// POST /api/redeem/:id/approve — approve a redemption
-router.post('/:id/approve', async (req, res) => {
+// POST /api/giftcards/redeem/:id/approve - Approve redemption
+router.post('/redeem/:id/approve', async (req, res) => {
   try {
     const { id } = req.params;
     if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -119,8 +139,8 @@ router.post('/:id/approve', async (req, res) => {
   }
 });
 
-// POST /api/redeem/:id/reject — reject a redemption
-router.post('/:id/reject', async (req, res) => {
+// POST /api/giftcards/redeem/:id/reject - Reject redemption
+router.post('/redeem/:id/reject', async (req, res) => {
   try {
     const { id } = req.params;
     if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -140,8 +160,8 @@ router.post('/:id/reject', async (req, res) => {
   }
 });
 
-// GET /api/redeem — list all redemptions
-router.get('/', async (req, res) => {
+// GET /api/giftcards/redeem - Get all redemptions
+router.get('/redeem', async (req, res) => {
   try {
     const redemptions = await Redeem.find().sort({ createdAt: -1 });
     res.json(redemptions);
