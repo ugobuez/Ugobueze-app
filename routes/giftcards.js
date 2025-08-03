@@ -1,67 +1,47 @@
-// routes/redeem.js
 import express from 'express';
 import multer from 'multer';
-import cloudinary from 'cloudinary';
+import { v2 as cloudinary } from 'cloudinary';
 import streamifier from 'streamifier';
-import { authenticateToken } from '../middleware/auth.js';
-import { Redeem }from '../model/redeem.js';
-import { User } from '../model/user.js';
-import {Referral } from '../model/referral.js';
-// routes/giftcards.js
-
 import mongoose from 'mongoose';
-import GiftCard from '../model/giftcard.js'; // Default import
-
+import { authenticateToken } from '../middleware/auth.js';
+import { Redeem } from '../model/redeem.js';
+import { User } from '../model/user.js';
+import { Referral } from '../model/referral.js';
+import GiftCard from '../model/giftcard.js';
 
 const router = express.Router();
-
-router.post('/', authenticateToken, async (req, res) => {
-  try {
-    const { name, brand, value, currency, image } = req.body;
-    if (!mongoose.Types.ObjectId.isValid(req.user._id)) {
-      return res.status(400).json({ error: 'Invalid user ID' });
-    }
-    const giftCard = new GiftCard({ name, brand, value, currency, image });
-    await giftCard.save();
-    res.status(201).json(giftCard);
-  } catch (error) {
-    console.error('Error creating gift card:', error);
-    res.status(500).json({ error: 'Failed to create gift card' });
-  }
-});
-
-router.get('/', async (req, res) => {
-  try {
-    const giftCards = await GiftCard.find();
-    res.json(giftCards);
-  } catch (error) {
-    console.error('Error fetching gift cards:', error);
-    res.status(500).json({ error: 'Failed to fetch gift cards' });
-  }
-});
-
-
 
 // Multer config for memory storage
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
 // Cloudinary config
-cloudinary.v2.config({
+cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+// POST /api/redeem — submit a redemption
 router.post('/', authenticateToken, upload.single('image'), async (req, res) => {
   try {
     const { amount, giftCardId } = req.body;
+
     if (!req.file) return res.status(400).json({ error: 'Image is required' });
     if (!giftCardId) return res.status(400).json({ error: 'giftCardId is required' });
 
-    const streamUpload = (req) => {
+    if (!mongoose.Types.ObjectId.isValid(giftCardId)) {
+      return res.status(400).json({ error: 'Invalid giftCardId' });
+    }
+
+    const giftCardExists = await GiftCard.findById(giftCardId);
+    if (!giftCardExists) {
+      return res.status(404).json({ error: 'Gift card not found' });
+    }
+
+    const streamUpload = () => {
       return new Promise((resolve, reject) => {
-        const stream = cloudinary.v2.uploader.upload_stream((error, result) => {
+        const stream = cloudinary.uploader.upload_stream((error, result) => {
           if (result) resolve(result);
           else reject(error);
         });
@@ -69,7 +49,7 @@ router.post('/', authenticateToken, upload.single('image'), async (req, res) => 
       });
     };
 
-    const result = await streamUpload(req);
+    const result = await streamUpload();
 
     const redeem = new Redeem({
       userId: req.user._id,
@@ -79,7 +59,6 @@ router.post('/', authenticateToken, upload.single('image'), async (req, res) => 
     });
 
     await redeem.save();
-
     res.status(201).json({ message: 'Gift card submitted for review', redeem });
   } catch (error) {
     console.error('Error submitting redemption:', error);
@@ -87,9 +66,15 @@ router.post('/', authenticateToken, upload.single('image'), async (req, res) => 
   }
 });
 
+// POST /api/redeem/:id/approve — approve a redemption
 router.post('/:id/approve', async (req, res) => {
   try {
-    const redeem = await Redeem.findById(req.params.id);
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ error: 'Invalid redemption ID' });
+    }
+
+    const redeem = await Redeem.findById(id);
     if (!redeem) return res.status(404).json({ error: 'Redemption not found' });
 
     redeem.status = 'approved';
@@ -102,22 +87,27 @@ router.post('/:id/approve', async (req, res) => {
     }
 
     const REFERRAL_BONUS = Number(process.env.REFERRAL_BONUS) || 3;
+
     if (user.referredBy) {
       const referral = await Referral.findOne({
         referrerCode: user.referredBy,
         referredUserId: user._id.toString(),
         isRedeemed: false,
       });
+
       if (referral) {
         referral.totalApprovedAmount = (referral.totalApprovedAmount || 0) + redeem.amount;
+
         if (referral.totalApprovedAmount >= 100 && !referral.isRedeemed) {
           referral.isRedeemed = true;
           const referrer = await User.findOne({ referralCode: user.referredBy });
+
           if (referrer) {
             referrer.referralEarnings += REFERRAL_BONUS;
             await referrer.save();
           }
         }
+
         await referral.save();
       }
     }
@@ -129,12 +119,20 @@ router.post('/:id/approve', async (req, res) => {
   }
 });
 
+// POST /api/redeem/:id/reject — reject a redemption
 router.post('/:id/reject', async (req, res) => {
   try {
-    const redeem = await Redeem.findById(req.params.id);
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ error: 'Invalid redemption ID' });
+    }
+
+    const redeem = await Redeem.findById(id);
     if (!redeem) return res.status(404).json({ error: 'Redemption not found' });
+
     redeem.status = 'rejected';
     await redeem.save();
+
     res.json({ message: 'Redemption rejected', redeem });
   } catch (error) {
     console.error('Error rejecting redemption:', error);
@@ -142,6 +140,7 @@ router.post('/:id/reject', async (req, res) => {
   }
 });
 
+// GET /api/redeem — list all redemptions
 router.get('/', async (req, res) => {
   try {
     const redemptions = await Redeem.find().sort({ createdAt: -1 });

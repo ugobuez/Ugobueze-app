@@ -1,12 +1,12 @@
 ### Create a Gift Card
 POST http://localhost:3500/api/giftcards
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2N2UzYzE0ZTMyNDBlYWQzNDNlNzM5MWQiLCJpc0FkbWluIjp0cnVlLCJpYXQiOjE3NDI5ODUwNzIsImV4cCI6MTc0Mjk4ODY3Mn0.MfZ211VHaKKlBLEKyfh7kjoOCuvNldftn3WHJAiAPgg
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2N2ZlNDUwYTBiOTY1Yjg4YjNmZTc5YmMiLCJuYW1lIjoiVWdvY2h1a3d1IE1lc2hhY2giLCJlbWFpbCI6InVnb2NodWt3dW1lc2hhY2g4QGdtYWlsLmNvbSIsImlzQWRtaW4iOnRydWUsImlhdCI6MTc1NDE4NTgzOSwiZXhwIjoxNzU0MTg5NDM5fQ.YFGBxrrqtecicmG74MyTlQoAucwINPJSiLaKjk2p61w
 Content-Type: application/json
 
 {
   "name": "Razer Gold Pin",
   "brand": "Razer",
-  "value": 1170,
+  "value": 1270,
   "currency": "USD",
   "image": "https://res.cloudinary.com/drbiup2zg/image/upload/v1742984827/razer_kqt8dh.webp"
 }
@@ -22,12 +22,11 @@ Content-Type: application/json
 
 ### get giftcard
 GET http://localhost:4500/api/admin/redemptions
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2N2ZlNDUwYTBiOTY1Yjg4YjNmZTc5YmMiLCJuYW1lIjoiVWdvY2h1a3d1IE1lc2hhY2giLCJlbWFpbCI6InVnb2NodWt3dW1lc2hhY2g4QGdtYWlsLmNvbSIsImlzQWRtaW4iOnRydWUsImlhdCI6MTc1NDEwNzQ2MCwiZXhwIjoxNzU0MTExMDYwfQ.bhbjCYTivkAGRTs7DYdntkLNOnwgXgsNJ0Yijfex5tA
-
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2N2ZlNDUwYTBiOTY1Yjg4YjNmZTc5YmMiLCJpc0FkbWluIjp0cnVlLCJpYXQiOjE3NTQxOTIwMzUsImV4cCI6MTc1NDE5NTYzNX0.l6ogXWuYKQcx2iyl08s54bCyHVEuWl4svJf-h7dsTLw
 
 ### Accept giftcard
-POST  http://localhost:3500/api/admin/redemptions/67e3c48395c4adce6d41c9c1/accept
-Authorization: Bearer  eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2N2UzYzE0ZTMyNDBlYWQzNDNlNzM5MWQiLCJpc0FkbWluIjp0cnVlLCJpYXQiOjE3NDQ1NTgzNTYsImV4cCI6MTc0NDU2MTk1Nn0.ZlleMpNaPNisXHVQvejNkO5u6l0PLbhy8jM3YNmTfTc
+POST  http://localhost:4500/api/admin/redemptions/688edcc0fe2924a67240de33/approve
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2N2ZlNDUwYTBiOTY1Yjg4YjNmZTc5YmMiLCJpc0FkbWluIjp0cnVlLCJpYXQiOjE3NTQxOTIwMzUsImV4cCI6MTc1NDE5NTYzNX0.l6ogXWuYKQcx2iyl08s54bCyHVEuWl4svJf-h7dsTLw
 Content-Type: application/json
 
 
@@ -68,7 +67,7 @@ Content-Type: application/json
 
 ### Get User Details
 GET http://localhost:4500/api/user/me
-Authorization: Bearer  eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2N2UzYzE0ZTMyNDBlYWQzNDNlNzM5MWQiLCJpc0FkbWluIjp0cnVlLCJpYXQiOjE3NDQ1NTgzNTYsImV4cCI6MTc0NDU2MTk1Nn0.ZlleMpNaPNisXHVQvejNkO5u6l0PLbhy8jM3YNmTfTc
+Authorization: Bearer  eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2N2ZlNDUwYTBiOTY1Yjg4YjNmZTc5YmMiLCJuYW1lIjoiVWdvY2h1a3d1IE1lc2hhY2giLCJlbWFpbCI6InVnb2NodWt3dW1lc2hhY2g4QGdtYWlsLmNvbSIsImlzQWRtaW4iOnRydWUsImlhdCI6MTc1NDE4MzQ2NSwiZXhwIjoxNzU0MTg3MDY1fQ.deD25ahFKKIkpvPmevxPDqa6SuZNO7gRV7VTr3umcwM
 
 
 ### Get User Referrals
@@ -133,29 +132,9 @@ Content-Type: application/json
 ### 5. Get All Redemptions (Admin)
 
 GET http://localhost:4500/api/admin/redemptions
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2N2ZlNDUwYTBiOTY1Yjg4YjNmZTc5YmMiLCJuYW1lIjoiVWdvY2h1a3d1IE1lc2hhY2giLCJlbWFpbCI6InVnb2NodWt3dW1lc2hhY2g4QGdtYWlsLmNvbSIsImlzQWRtaW4iOnRydWUsImlhdCI6MTc1NDE4MjUyMywiZXhwIjoxNzU0MTg2MTIzfQ.KDFrFsEE8FmPuVgpG2iS968g9tnSxkLUO71LOJaADpE
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2N2ZlNDUwYTBiOTY1Yjg4YjNmZTc5YmMiLCJpc0FkbWluIjp0cnVlLCJpYXQiOjE3NTQxOTIwMzUsImV4cCI6MTc1NDE5NTYzNX0.l6ogXWuYKQcx2iyl08s54bCyHVEuWl4svJf-h7dsTLw
 
 
 
 
 
-### Redeem Gift Card (with image upload)
-POST http://localhost:4500/api/giftcards/688d791dc55099a9c7a1490e/redeem
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2N2ZlNDUwYTBiOTY1Yjg4YjNmZTc5YmMiLCJuYW1lIjoiVWdvY2h1a3d1IE1lc2hhY2giLCJlbWFpbCI6InVnb2NodWt3dW1lc2hhY2g4QGdtYWlsLmNvbSIsImlzQWRtaW4iOnRydWUsImlhdCI6MTc1NDEwMjkyMCwiZXhwIjoxNzU0MTA2NTIwfQ.Leh4tob-TdPrV6dU9drLBhrb1IbEBYCWYo-lDQk6Gc8
-Content-Type: multipart/form-data
-
-amount=350
-image=@/Users/apple/Downloads/IMG_2188.jpg
-
-
-
-
-### Submit Gift Card Redemption (image upload)
-POST http://localhost:4500/api/giftcards/688d791dc55099a9c7a1490e/redeem
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2N2ZlNDUwYTBiOTY1Yjg4YjNmZTc5YmMiLCJuYW1lIjoiVWdvY2h1a3d1IE1lc2hhY2giLCJlbWFpbCI6InVnb2NodWt3dW1lc2hhY2g4QGdtYWlsLmNvbSIsImlzQWRtaW4iOnRydWUsImlhdCI6MTc1NDEwMjkyMCwiZXhwIjoxNzU0MTA2NTIwfQ.Leh4tob-TdPrV6dU9drLBhrb1IbEBYCWYo-lDQk6Gc8
-
-Content-Type: multipart/form-data
-
-giftCardId=688d791dc55099a9c7a1490e
-amount=350
-image=@/Users/apple/Downloads/IMG_2188.jpg
