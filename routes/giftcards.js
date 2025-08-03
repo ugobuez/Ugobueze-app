@@ -42,6 +42,16 @@ router.get('/:id', async (req, res) => {
     res.status(500).json({ error: 'Server error while fetching gift card' });
   }
 });
+// GET /api/giftcards
+router.get("/", async (req, res) => {
+  try {
+    const cards = await GiftCard.find();
+    res.json(cards);
+  } catch (err) {
+    console.error("Failed to fetch gift cards:", err);
+    res.status(500).json({ error: "Failed to fetch gift cards" });
+  }
+});
 
 // POST /api/giftcards/redeem - Submit a redemption
 router.post('/redeem', authenticateToken, upload.single('image'), async (req, res) => {
