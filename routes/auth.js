@@ -3,7 +3,7 @@ import _ from "lodash";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { User, validateUser } from "../model/user.js";
-import { authenticateToken } from "../middlewave/auth.js";
+import { authenticateToken } from "../middleware/auth.js";
 
 const router = express.Router();
 

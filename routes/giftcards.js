@@ -1,126 +1,154 @@
-import express from "express";
-import GiftCard from "../model/giftcard.js";
-import { authenticateToken, authenticateAdmin } from "../middlewave/auth.js";
-import multer from "multer";
-import { v2 as cloudinary } from "cloudinary";
-import dotenv from "dotenv";
-import streamifier from "streamifier";
-import { Redemption } from "../model/redeem.js";
+// routes/redeem.js
+import express from 'express';
+import multer from 'multer';
+import cloudinary from 'cloudinary';
+import streamifier from 'streamifier';
+import { authenticateToken } from '../middleware/auth.js';
+import { Redeem }from '../model/redeem.js';
+import { User } from '../model/user.js';
+import {Referral } from '../model/referral.js';
+// routes/giftcards.js
 
-dotenv.config();
+import mongoose from 'mongoose';
+import GiftCard from '../model/giftcard.js'; // Default import
+
 
 const router = express.Router();
-const storage = multer.memoryStorage();
-const upload = multer({
-  storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // Limit to 5MB
-});
 
-cloudinary.config({
-  cloud_name: process.env.CLOUD_NAME,
-  api_key: process.env.CLOUD_API_KEY,
-  api_secret: process.env.CLOUD_API_SECRET,
-});
-
-// 🟢 Get all gift cards
-router.get("/", async (req, res) => {
-  try {
-    const giftCards = await GiftCard.find();
-    res.json(giftCards);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// 🟢 Get a single gift card by ID
-router.get("/:id", async (req, res) => {
-  try {
-    const giftCard = await GiftCard.findById(req.params.id);
-    if (!giftCard) return res.status(404).json({ error: "Gift card not found" });
-    res.json(giftCard);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// 🔴 Create a new gift card (Admin Only)
-router.post("/", authenticateAdmin, async (req, res) => {
+router.post('/', authenticateToken, async (req, res) => {
   try {
     const { name, brand, value, currency, image } = req.body;
-    if (!name || !brand || !value || !currency || !image) {
-      return res.status(400).json({ error: "All fields are required, including image" });
+    if (!mongoose.Types.ObjectId.isValid(req.user._id)) {
+      return res.status(400).json({ error: 'Invalid user ID' });
     }
-
     const giftCard = new GiftCard({ name, brand, value, currency, image });
     await giftCard.save();
     res.status(201).json(giftCard);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+  } catch (error) {
+    console.error('Error creating gift card:', error);
+    res.status(500).json({ error: 'Failed to create gift card' });
   }
 });
 
-// 🟡 Update a gift card (Admin Only)
-router.put("/:id", authenticateAdmin, async (req, res) => {
+router.get('/', async (req, res) => {
   try {
-    const giftCard = await GiftCard.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    if (!giftCard) return res.status(404).json({ error: "Gift card not found" });
-    res.json(giftCard);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+    const giftCards = await GiftCard.find();
+    res.json(giftCards);
+  } catch (error) {
+    console.error('Error fetching gift cards:', error);
+    res.status(500).json({ error: 'Failed to fetch gift cards' });
   }
 });
 
-// 🔴 Delete a gift card (Admin Only)
-router.delete("/:id", authenticateAdmin, async (req, res) => {
-  try {
-    await GiftCard.findByIdAndDelete(req.params.id);
-    res.json({ message: "Gift card deleted" });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+
+
+// Multer config for memory storage
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
+
+// Cloudinary config
+cloudinary.v2.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
 });
-// ... other imports and code ...
 
-// 🟠 Redeem a gift card (User)
-router.post("/:id/redeem", authenticateToken, upload.single("image"), async (req, res) => {
+router.post('/', authenticateToken, upload.single('image'), async (req, res) => {
   try {
-    const giftCard = await GiftCard.findById(req.params.id);
-    if (!giftCard) return res.status(404).json({ error: "Gift card not found" });
+    const { amount, giftCardId } = req.body;
+    if (!req.file) return res.status(400).json({ error: 'Image is required' });
+    if (!giftCardId) return res.status(400).json({ error: 'giftCardId is required' });
 
-    if (!req.file) return res.status(400).json({ error: "Image is required" });
-
-    const { amount } = req.body;
-    if (!amount || isNaN(amount) || parseFloat(amount) <= 0) {
-      return res.status(400).json({ error: "Valid amount greater than zero is required" });
-    }
-
-    const uploadToCloudinary = () => {
+    const streamUpload = (req) => {
       return new Promise((resolve, reject) => {
-        const stream = cloudinary.uploader.upload_stream({ timeout: 30000 }, (error, result) => {
-          if (error) return reject(error);
-          resolve(result);
+        const stream = cloudinary.v2.uploader.upload_stream((error, result) => {
+          if (result) resolve(result);
+          else reject(error);
         });
         streamifier.createReadStream(req.file.buffer).pipe(stream);
       });
     };
 
-    const result = await uploadToCloudinary();
+    const result = await streamUpload(req);
 
-    const redemption = new Redemption({
+    const redeem = new Redeem({
       userId: req.user._id,
-      giftCardId: giftCard._id,
-      cardType: giftCard.name, // Add cardType required by schema
-      image: result.secure_url,
-      amount: parseFloat(amount),
-      status: "pending",
+      giftCardId,
+      amount: Number(amount) || 0,
+      imageUrl: result.secure_url,
     });
 
-    await redemption.save();
+    await redeem.save();
 
-    res.status(201).json({ message: "Redemption submitted", redemption });
-  } catch (err) {
-    console.error("Redemption error:", err);
-    res.status(500).json({ error: "Server error, please try again later" });
+    res.status(201).json({ message: 'Gift card submitted for review', redeem });
+  } catch (error) {
+    console.error('Error submitting redemption:', error);
+    res.status(500).json({ error: 'Failed to submit gift card' });
+  }
+});
+
+router.post('/:id/approve', async (req, res) => {
+  try {
+    const redeem = await Redeem.findById(req.params.id);
+    if (!redeem) return res.status(404).json({ error: 'Redemption not found' });
+
+    redeem.status = 'approved';
+    await redeem.save();
+
+    const user = await User.findById(redeem.userId);
+    if (user) {
+      user.balance += redeem.amount;
+      await user.save();
+    }
+
+    const REFERRAL_BONUS = Number(process.env.REFERRAL_BONUS) || 3;
+    if (user.referredBy) {
+      const referral = await Referral.findOne({
+        referrerCode: user.referredBy,
+        referredUserId: user._id.toString(),
+        isRedeemed: false,
+      });
+      if (referral) {
+        referral.totalApprovedAmount = (referral.totalApprovedAmount || 0) + redeem.amount;
+        if (referral.totalApprovedAmount >= 100 && !referral.isRedeemed) {
+          referral.isRedeemed = true;
+          const referrer = await User.findOne({ referralCode: user.referredBy });
+          if (referrer) {
+            referrer.referralEarnings += REFERRAL_BONUS;
+            await referrer.save();
+          }
+        }
+        await referral.save();
+      }
+    }
+
+    res.json({ message: 'Redemption approved', redeem });
+  } catch (error) {
+    console.error('Error approving redemption:', error);
+    res.status(500).json({ error: 'Failed to approve redemption' });
+  }
+});
+
+router.post('/:id/reject', async (req, res) => {
+  try {
+    const redeem = await Redeem.findById(req.params.id);
+    if (!redeem) return res.status(404).json({ error: 'Redemption not found' });
+    redeem.status = 'rejected';
+    await redeem.save();
+    res.json({ message: 'Redemption rejected', redeem });
+  } catch (error) {
+    console.error('Error rejecting redemption:', error);
+    res.status(500).json({ error: 'Failed to reject redemption' });
+  }
+});
+
+router.get('/', async (req, res) => {
+  try {
+    const redemptions = await Redeem.find().sort({ createdAt: -1 });
+    res.json(redemptions);
+  } catch (error) {
+    console.error('Error fetching redemptions:', error);
+    res.status(500).json({ error: 'Failed to fetch redemptions' });
   }
 });
 

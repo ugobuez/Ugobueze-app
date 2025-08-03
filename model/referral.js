@@ -1,11 +1,11 @@
-// models/referral.js
+// model/referral.js
 import mongoose from 'mongoose';
 
 const referralSchema = new mongoose.Schema({
   referrerCode: { type: String, required: true },
-  referredUserId: { type: mongoose.Schema.Types.ObjectId, required: true, unique: true },
+  referredUserId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   isRedeemed: { type: Boolean, default: false },
-  createdAt: { type: Date, default: Date.now }
+  totalApprovedAmount: { type: Number, default: 0 },
 });
 
-export default mongoose.model('Referral', referralSchema);
+export const Referral = mongoose.model('Referral', referralSchema);

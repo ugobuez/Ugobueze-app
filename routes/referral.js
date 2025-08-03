@@ -1,10 +1,11 @@
+// routes/referrals.js
 import express from 'express';
-import Referral from '../model/referral.js';
+import { Referral } from '../model/referral.js';
 import { User } from '../model/user.js';
 
 const router = express.Router();
 
-// Save a new referral (optional if already linked during signup)
+// Save a new referral
 router.post('/', async (req, res) => {
   const { referrerCode, referredUserId } = req.body;
 
@@ -23,6 +24,7 @@ router.post('/', async (req, res) => {
 
     res.status(201).json(referral);
   } catch (error) {
+    console.error('Error saving referral:', error);
     res.status(500).json({ error: 'Failed to save referral.' });
   }
 });
@@ -48,7 +50,27 @@ router.patch('/redeem', async (req, res) => {
 
     res.status(200).json({ success: true });
   } catch (error) {
+    console.error('Error redeeming referral:', error);
     res.status(500).json({ error: 'Failed to redeem referral.' });
+  }
+});
+
+// Get referral code by user ID
+router.get('/code/:userId', async (req, res) => {
+  const { userId } = req.params;
+  console.log('Fetching referral code for userId:', userId);
+
+  try {
+    const user = await User.findById(userId).select('referralCode name');
+    if (!user) {
+      console.warn('User not found for ID:', userId);
+      return res.status(404).json({ error: 'User not found.' });
+    }
+
+    res.json({ name: user.name, referralCode: user.referralCode });
+  } catch (error) {
+    console.error('Error fetching referral code:', error);
+    res.status(500).json({ error: 'Failed to fetch referral code.' });
   }
 });
 
@@ -66,6 +88,7 @@ router.get('/stats/:referralCode', async (req, res) => {
       referralEarnings: referrer.referralEarnings || 0,
     });
   } catch (error) {
+    console.error('Error fetching referral stats:', error);
     res.status(500).json({ error: 'Failed to fetch stats.' });
   }
 });
@@ -86,31 +109,18 @@ router.get('/leaderboard', async (req, res) => {
 
     res.json(formatted);
   } catch (error) {
+    console.error('Error fetching leaderboard:', error);
     res.status(500).json({ error: 'Failed to fetch leaderboard.' });
   }
 });
 
-// Track sharing (optional analytics)
+// Track sharing analytics
 router.post('/share', async (req, res) => {
   try {
     res.status(200).json({ success: true });
   } catch (error) {
+    console.error('Error tracking share:', error);
     res.status(500).json({ error: 'Failed to track share.' });
-  }
-});
-
-// ✅ Get referral code by user ID
-router.get('/code/:userId', async (req, res) => {
-  const { userId } = req.params;
-
-  try {
-    const user = await User.findById(userId).select('referralCode name');
-
-    if (!user) return res.status(404).json({ error: 'User not found.' });
-
-    res.json({ name: user.name, referralCode: user.referralCode });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch referral code.' });
   }
 });
 
