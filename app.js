@@ -55,7 +55,7 @@ app.use(cors({
 app.use(express.json());
 
 // Routes
-app.use('/api/user', userRoute);
+app.use('/api/users', userRoute);
 app.use('/api/auth', authRoute);
 app.use('/api/giftcards', giftCardRoutes);
 app.use('/api/admin', adminRoutes);
