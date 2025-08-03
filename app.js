@@ -29,7 +29,6 @@ import authRoute from './routes/auth.js';
 import giftCardRoutes from './routes/giftcards.js';
 import userRoute from './routes/users.js';
 import adminRoutes from './routes/admin.js';
-
 import referralRoute from './routes/referral.js';
 
 // MongoDB Connection
@@ -60,8 +59,12 @@ app.use('/api/user', userRoute);
 app.use('/api/auth', authRoute);
 app.use('/api/giftcards', giftCardRoutes);
 app.use('/api/admin', adminRoutes);
-
 app.use('/api/referrals', referralRoute);
+
+// Health check route
+app.get('/api', (req, res) => {
+  res.status(200).json({ message: 'API is working' });
+});
 
 // Fallback for unknown routes
 app.use((req, res, next) => {
