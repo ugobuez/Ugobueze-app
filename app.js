@@ -1,27 +1,43 @@
+// app.js
 import express from 'express';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import cors from 'cors';
+import cloudinary from 'cloudinary';
 
 // Load environment variables
-dotenv.config();
+dotenv.config({ path: '/Users/apple/Desktop/ugobtc-api/.env' });
+console.log('Environment variables:', {
+  MONGODB_URI: process.env.MONGODB_URI,
+  JWT_SECRET: process.env.JWT_SECRET,
+  CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME,
+  CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY,
+  CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET ? '[REDACTED]' : undefined,
+  REFERRAL_BONUS: process.env.REFERRAL_BONUS,
+});
+
+// Cloudinary config
+cloudinary.v2.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+console.log('Cloudinary configured globally');
 
 // Import Routes
 import authRoute from './routes/auth.js';
 import giftCardRoutes from './routes/giftcards.js';
 import userRoute from './routes/users.js';
 import adminRoutes from './routes/admin.js';
-import referralRoutes from './routes/referral.js';
+import redeemRoute from './routes/redeem.js';
+import referralRoute from './routes/referral.js';
 
 // MongoDB Connection
 const MONGODB_URI = process.env.MONGODB_URI;
 
-mongoose.connect(MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
-.then(() => console.log('✅ Connected to MongoDB Atlas'))
-.catch((err) => console.error('❌ MongoDB connection error:', err));
+mongoose.connect(MONGODB_URI)
+  .then(() => console.log('✅ Connected to MongoDB Atlas'))
+  .catch((err) => console.error('❌ MongoDB connection error:', err));
 
 // Initialize Express App
 const app = express();
@@ -32,7 +48,7 @@ app.use(cors({
     'http://localhost:3000',
     'https://ugobueze-web.vercel.app'
   ],
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
 }));
@@ -44,7 +60,8 @@ app.use('/api/user', userRoute);
 app.use('/api/auth', authRoute);
 app.use('/api/giftcards', giftCardRoutes);
 app.use('/api/admin', adminRoutes);
-app.use('/api/referrals', referralRoutes);
+app.use('/api/redeem', redeemRoute);
+app.use('/api/referrals', referralRoute);
 
 // Fallback for unknown routes
 app.use((req, res, next) => {
@@ -62,3 +79,6 @@ const PORT = process.env.PORT || 4500;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
+
+// Export cloudinary for use in routes
+export { cloudinary };

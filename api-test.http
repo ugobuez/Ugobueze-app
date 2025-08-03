@@ -22,7 +22,7 @@ Content-Type: application/json
 
 ### get giftcard
 GET http://localhost:4500/api/admin/redemptions
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2N2ZlNDUwYTBiOTY1Yjg4YjNmZTc5YmMiLCJuYW1lIjoiVWdvY2h1a3d1IE1lc2hhY2giLCJlbWFpbCI6InVnb2NodWt3dW1lc2hhY2g4QGdtYWlsLmNvbSIsImlzQWRtaW4iOnRydWUsImlhdCI6MTc1NDA5ODg3NiwiZXhwIjoxNzU0MTAyNDc2fQ.VPRmCdZBa7SfVYbCqaXC57QO8Gnyw2LzJenTc6ZnwZU
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2N2ZlNDUwYTBiOTY1Yjg4YjNmZTc5YmMiLCJuYW1lIjoiVWdvY2h1a3d1IE1lc2hhY2giLCJlbWFpbCI6InVnb2NodWt3dW1lc2hhY2g4QGdtYWlsLmNvbSIsImlzQWRtaW4iOnRydWUsImlhdCI6MTc1NDEwNzQ2MCwiZXhwIjoxNzU0MTExMDYwfQ.bhbjCYTivkAGRTs7DYdntkLNOnwgXgsNJ0Yijfex5tA
 
 
 ### Accept giftcard
@@ -61,8 +61,8 @@ Content-Type: application/json
 
 {
   "name": "Charlotte Davis",
-  "email": "charlottedavis48@gmail.com",
-  "password": "Askme@5671",
+  "email": "charlottedavis330@gmail.com",
+  "password": "Askme@330",
   "referredBy": "-Og1mR-d"
 }
 
@@ -77,7 +77,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODhjNDJiM
 
 ### Get Referral Leaderboard
 GET http://localhost:4500/api/referrals/leaderboard
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODhjNDJiM2M3MjkzODAzMGQ4NGUyYzIiLCJuYW1lIjoiVWdvY2h1a3d1IE1lc2hhY2giLCJlbWFpbCI6InVnb2J1ZXpld2ViQGdtYWlsLmNvbSIsImlzQWRtaW4iOmZhbHNlLCJpYXQiOjE3NTQwMjM1NDUsImV4cCI6MTc1NDAyNzE0NX0.b33lcGLPdVN_Ir-ibbJL6AXtgFxGjQAUuMux6cE65NY
+Authorization: Bearer OiI2N2ZlNDUwYTBiOTY1Yjg4YjNmZTc5YmMiLCJuYW1lIjoiVWdvY2h1a3d1IE1lc2hhY2giLCJlbWFpbCI6InVnb2NodWt3dW1lc2hhY2g4QGdtYWlsLmNvbSIsImlzQWRtaW4iOnRydWUsImlhdCI6MTc1NDExNjIwMywiZXhwIjoxNzU0MTE5ODAzfQ.l9pfrE1cP5UfSNzAxUh6bZyyR-Y8lPU2ooUyz_yS-p8
 
 ### Get Referral Stats
 GET http://localhost:4500/api/referrals/stats/-Og1mR-d
@@ -101,7 +101,7 @@ Content-Type: application/json
 
 
 ### Get Referral Code
-GET http://localhost:4500/api/referrals/code/688c42b3c72938030d84e2c2
+GET http://localhost:4500/api/referrals/code/688e3589db1879cc605b6737
 Content-Type: application/json
 
 ### 1. Admin Login
@@ -133,7 +133,7 @@ Content-Type: application/json
 ### 5. Get All Redemptions (Admin)
 
 GET http://localhost:4500/api/admin/redemptions
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2N2ZlNDUwYTBiOTY1Yjg4YjNmZTc5YmMiLCJuYW1lIjoiVWdvY2h1a3d1IE1lc2hhY2giLCJlbWFpbCI6InVnb2NodWt3dW1lc2hhY2g4QGdtYWlsLmNvbSIsImlzQWRtaW4iOnRydWUsImlhdCI6MTc1NDEwMjQ5NCwiZXhwIjoxNzU0MTA2MDk0fQ.dafZbHtyKT6IkRulyOSR8srafnVOz8yum8gQLzlE_SI
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2N2ZlNDUwYTBiOTY1Yjg4YjNmZTc5YmMiLCJuYW1lIjoiVWdvY2h1a3d1IE1lc2hhY2giLCJlbWFpbCI6InVnb2NodWt3dW1lc2hhY2g4QGdtYWlsLmNvbSIsImlzQWRtaW4iOnRydWUsImlhdCI6MTc1NDE4MjUyMywiZXhwIjoxNzU0MTg2MTIzfQ.KDFrFsEE8FmPuVgpG2iS968g9tnSxkLUO71LOJaADpE
 
 
 
@@ -147,15 +147,7 @@ Content-Type: multipart/form-data
 amount=350
 image=@/Users/apple/Downloads/IMG_2188.jpg
 
-### Submit Gift Card Redemption (image upload)
-POST http://localhost:4500/api/giftcards/688d791dc55099a9c7a1490e/redeem
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2N2ZlNDUwYTBiOTY1Yjg4YjNmZTc5YmMiLCJuYW1lIjoiVWdvY2h1a3d1IE1lc2hhY2giLCJlbWFpbCI6InVnb2NodWt3dW1lc2hhY2g4QGdtYWlsLmNvbSIsImlzQWRtaW4iOnRydWUsImlhdCI6MTc1NDEwMjkyMCwiZXhwIjoxNzU0MTA2NTIwfQ.Leh4tob-TdPrV6dU9drLBhrb1IbEBYCWYo-lDQk6Gc8
 
-Content-Type: multipart/form-data
-
-giftCardId=688d791dc55099a9c7a1490e
-amount=350
-image=@/Users/apple/Downloads/IMG_2188.jpg
 
 
 ### Submit Gift Card Redemption (image upload)

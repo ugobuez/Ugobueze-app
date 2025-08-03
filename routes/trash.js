@@ -14,7 +14,7 @@ const authenticateToken = (req, res, next) => {
         if (err) return res.status(403).json({ message: 'Invalid token' });
         req.user = decoded;  // Attach the decoded user information
         next();
-    });
+    });amntyyyyghty 
 };
  const authenticateAdmin = (req, res, next) => {
     const token = req.header("Authorization")?.replace("Bearer ", "");
