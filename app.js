@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import { v2 as cloudinary } from 'cloudinary'; // ✅ Correct Cloudinary import
-
+import referralRoutes from './routes/referral.js';
 // Load environment variables
 dotenv.config();
 
@@ -68,7 +68,7 @@ import userRoute from './routes/users.js';
 app.use('/api/auth', authRoute);
 app.use('/api/users', userRoute);
 app.use('/api/giftcards', giftCardRoutes);
-
+app.use('/api/referrals', referralRoutes);
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   res.status(200).json({ 
