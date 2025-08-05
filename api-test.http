@@ -1,5 +1,5 @@
 ### Create a Gift Card
-POST http://localhost:3500/api/giftcards
+POST http://localhost:4500/api/giftcards
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2N2ZlNDUwYTBiOTY1Yjg4YjNmZTc5YmMiLCJuYW1lIjoiVWdvY2h1a3d1IE1lc2hhY2giLCJlbWFpbCI6InVnb2NodWt3dW1lc2hhY2g4QGdtYWlsLmNvbSIsImlzQWRtaW4iOnRydWUsImlhdCI6MTc1NDE4NTgzOSwiZXhwIjoxNzU0MTg5NDM5fQ.YFGBxrrqtecicmG74MyTlQoAucwINPJSiLaKjk2p61w
 Content-Type: application/json
 
@@ -16,13 +16,13 @@ POST http://localhost:4500/api/auth/loginNow
 Content-Type: application/json
 
 {
-  "email": "ugochukwumeshach8@gmail.com",
-  "password": "Askme@8"
+  "email": "ugobuezeweb@gmail.com",
+  "password": "ugobueze"
 }
 
 ### get giftcard
 GET http://localhost:4500/api/admin/redemptions
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2N2ZlNDUwYTBiOTY1Yjg4YjNmZTc5YmMiLCJpc0FkbWluIjp0cnVlLCJpYXQiOjE3NTQxOTIwMzUsImV4cCI6MTc1NDE5NTYzNX0.l6ogXWuYKQcx2iyl08s54bCyHVEuWl4svJf-h7dsTLw
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODhjNDJiM2M3MjkzODAzMGQ4NGUyYzIiLCJuYW1lIjoiVWdvY2h1a3d1IE1lc2hhY2giLCJlbWFpbCI6InVnb2J1ZXpld2ViQGdtYWlsLmNvbSIsImlzQWRtaW4iOnRydWUsImlhdCI6MTc1NDIwMDQwMiwiZXhwIjoxNzU0MjA0MDAyfQ.h4kPk-dNMqZRqTL6fvvWiouk_TvjlzVrSyVJvQ2wCb0
 
 ### Accept giftcard
 POST  http://localhost:4500/api/admin/redemptions/688edcc0fe2924a67240de33/approve
@@ -55,19 +55,19 @@ Content-Type: application/json
 }
 
 ### create user
-POST http://localhost:4500/api/user
+POST http://localhost:4500/api/users
 Content-Type: application/json
 
 {
   "name": "Charlotte Davis",
-  "email": "charlottedavis330@gmail.com",
+  "email": "charlottedavis333@gmail.com",
   "password": "Askme@330",
   "referredBy": "-Og1mR-d"
 }
 
 ### Get User Details
-GET http://localhost:4500/api/user/me
-Authorization: Bearer  eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2N2ZlNDUwYTBiOTY1Yjg4YjNmZTc5YmMiLCJuYW1lIjoiVWdvY2h1a3d1IE1lc2hhY2giLCJlbWFpbCI6InVnb2NodWt3dW1lc2hhY2g4QGdtYWlsLmNvbSIsImlzQWRtaW4iOnRydWUsImlhdCI6MTc1NDE4MzQ2NSwiZXhwIjoxNzU0MTg3MDY1fQ.deD25ahFKKIkpvPmevxPDqa6SuZNO7gRV7VTr3umcwM
+GET http://localhost:4500/api/users/me
+Authorization: Bearer   eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI6ODhjNDJiM3M3MjkzODAzMGQ4NGUyYzIiLCJuYW1lIjoiVWdvY2h1a3d1IE1lc2hhY2giLCJlbWFpbCI6InVnb2J1ZXpld2ViQGdtYWlsLmNvbSIsImlzQWRtaW4iOnRydWUsImlhdCI6MTc1NDI1MzA2NiwiZXhwIjoxNzU0MjU2NjY2fQ.pUmeDfOAw7KQHdHBH5d2V51JsNsJRV-4KN3QBkQaxFQ
 
 
 ### Get User Referrals
@@ -76,11 +76,11 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODhjNDJiM
 
 ### Get Referral Leaderboard
 GET http://localhost:4500/api/referrals/leaderboard
-Authorization: Bearer OiI2N2ZlNDUwYTBiOTY1Yjg4YjNmZTc5YmMiLCJuYW1lIjoiVWdvY2h1a3d1IE1lc2hhY2giLCJlbWFpbCI6InVnb2NodWt3dW1lc2hhY2g4QGdtYWlsLmNvbSIsImlzQWRtaW4iOnRydWUsImlhdCI6MTc1NDExNjIwMywiZXhwIjoxNzU0MTE5ODAzfQ.l9pfrE1cP5UfSNzAxUh6bZyyR-Y8lPU2ooUyz_yS-p8
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI6ODhjNDJiM3M3MjkzODAzMGQ4NGUyYzIiLCJuYW1lIjoiVWdvY2h1a3d1IE1lc2hhY2giLCJlbWFpbCI6InVnb2J1ZXpld2ViQGdtYWlsLmNvbSIsImlzQWRtaW4iOnRydWUsImlhdCI6MTc1NDI1MzA2NiwiZXhwIjoxNzU0MjU2NjY2fQ.pUmeDfOAw7KQHdHBH5d2V51JsNsJRV-4KN3QBkQaxFQ
 
 ### Get Referral Stats
 GET http://localhost:4500/api/referrals/stats/-Og1mR-d
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODhjNDJiM2M3MjkzODAzMGQ4NGUyYzIiLCJuYW1lIjoiVWdvY2h1a3d1IE1lc2hhY2giLCJlbWFpbCI6InVnb2J1ZXpld2ViQGdtYWlsLmNvbSIsImlzQWRtaW4iOmZhbHNlLCJpYXQiOjE3NTQwMjM1NDUsImV4cCI6MTc1NDAyNzE0NX0.b33lcGLPdVN_Ir-ibbJL6AXtgFxGjQAUuMux6cE65NY
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI6ODhjNDJiM3M3MjkzODAzMGQ4NGUyYzIiLCJuYW1lIjoiVWdvY2h1a3d1IE1lc2hhY2giLCJlbWFpbCI6InVnb2J1ZXpld2ViQGdtYWlsLmNvbSIsImlzQWRtaW4iOnRydWUsImlhdCI6MTc1NDI1MzA2NiwiZXhwIjoxNzU0MjU2NjY2fQ.pUmeDfOAw7KQHdHBH5d2V51JsNsJRV-4KN3QBkQaxFQ
 
 ### Redeem Referral
 PATCH http://localhost:4500/api/referrals/redeem
@@ -132,9 +132,13 @@ Content-Type: application/json
 ### 5. Get All Redemptions (Admin)
 
 GET http://localhost:4500/api/admin/redemptions
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2N2ZlNDUwYTBiOTY1Yjg4YjNmZTc5YmMiLCJpc0FkbWluIjp0cnVlLCJpYXQiOjE3NTQxOTIwMzUsImV4cCI6MTc1NDE5NTYzNX0.l6ogXWuYKQcx2iyl08s54bCyHVEuWl4svJf-h7dsTLw
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2N2ZlNDUwYTBiOTY1Yjg4YjNmZTc5YmMiLCJuYW1lIjoiVWdvY2h1a3d1IE1lc2hhY2giLCJlbWFpbCI6InVnb2NodWt3dW1lc2hhY2g4QGdtYWlsLmNvbSIsImlzQWRtaW4iOnRydWUsImlhdCI6MTc1NDMyMTk2OSwiZXhwIjoxNzU0MzI1NTY5fQ.8AlN4TBuhdhq6--hdIw30qzwmlnRj1mrq9RVSP2z4Rg
 
 
 
 
 
+curl -X POST http://localhost:4500/api/giftcards/688f0e52cc1be6951613b158/redeem \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODhjNDJiM2M3MjkzODAzMGQ4NGUyYzIiLCJuYW1lIjoiVWdvY2h1a3d1IE1lc2hhY2giLCJlbWFpbCI6InVnb2J1ZXpld2ViQGdtYWlsLmNvbSIsImlzQWRtaW4iOnRydWUsImlhdCI6MTc1NDIwNTU0NSwiZXhwIjoxNzU0MjA5MTQ1fQ.jOy8g84wxBpN11RNAiUWgC77hS3Wd_fIZps4ruOGorc" \
+  -F "amount=1300" \
+  -F "image=@/Users/apple/Downloads/Walmart-gift-card.webp"

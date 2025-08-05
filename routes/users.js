@@ -8,118 +8,116 @@ import { authenticateToken } from "../middleware/auth.js";
 
 const router = express.Router();
 
-// Generate a unique referral code
+// ✅ Generate unique referral code
 const generateUniqueReferralCode = async () => {
   let referralCode;
   let isUnique = false;
   while (!isUnique) {
     referralCode = shortid.generate();
     const existingUser = await User.findOne({ referralCode });
-    if (!existingUser) {
-      isUnique = true;
-    }
+    if (!existingUser) isUnique = true;
   }
   return referralCode;
 };
 
-// Register new user with referral code generation
-router.post("/", async (req, res) => {
-  const { error } = validateUser(req.body);
-  if (error) {
-    return res.status(400).send(error.details[0].message);
-  }
-
-  let user = await User.findOne({ email: req.body.email });
-  if (user) {
-    return res.status(400).send("User already registered.");
-  }
-
-  user = new User(_.pick(req.body, ["name", "email", "password", "referredBy"]));
-  const salt = await bcrypt.genSalt(10);
-  user.password = await bcrypt.hash(user.password, salt);
-
+// ✅ Register new user with role + referral code generation
+router.post('/', async (req, res) => {
   try {
-    user.referralCode = await generateUniqueReferralCode();
-  } catch (err) {
-    console.error("Error generating referral code:", err);
-    return res.status(500).send("Error generating referral code: " + err.message);
-  }
+    const { error } = validateUser(req.body);
+    if (error) return res.status(400).json({ error: error.details[0].message });
 
-  if (user.referredBy) {
-    const referrer = await User.findOne({ referralCode: user.referredBy });
-    if (referrer) {
-      referrer.referrals = referrer.referrals || [];
-      referrer.referrals.push(user._id);
-      referrer.balance = (referrer.balance || 0) + 3;
-      try {
-        await referrer.save();
-      } catch (err) {
-        console.error("Error updating referrer:", err);
-        return res.status(500).send("Error updating referrer: " + err.message);
-      }
-    } else {
-      user.referredBy = undefined;
-    }
-  }
+    const existingUser = await User.findOne({ email: req.body.email });
+    if (existingUser) return res.status(400).json({ error: 'User already exists' });
 
-  try {
+    const hashedPassword = await bcrypt.hash(req.body.password, 10);
+
+    // ✅ Generate referral code
+    const referralCode = await generateUniqueReferralCode();
+
+    // ✅ Assign user fields
+    const user = new User({
+      name: req.body.name,
+      email: req.body.email,
+      password: hashedPassword,
+      referredBy: req.body.referredBy,
+      isAdmin: req.body.isAdmin || false,
+      role: req.body.isAdmin ? 'admin' : 'user',
+      referralCode, // ✅ set generated referral code
+    });
+
     await user.save();
-  } catch (err) {
-    console.error("Error saving user:", err);
-    return res.status(500).send("Error creating user: " + err.message);
-  }
 
-  const jwtPrivateKey = process.env.JWT_SECRET;
-  if (!jwtPrivateKey) {
-    return res.status(500).json({ message: "JWT secret is missing from environment variables." });
-  }
+    // ✅ Generate token
+    const token = jwt.sign(
+      {
+        id: user._id,
+        email: user.email,
+        role: user.role,
+      },
+      process.env.JWT_SECRET || 'your_jwt_secret',
+      { expiresIn: '7d' }
+    );
 
-  const payload = {
-    _id: user._id,
-    name: user.name,
-    email: user.email,
-    isAdmin: user.isAdmin,
-  };
-
-  const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "1h" });
-
-  res.send({
-    ..._.pick(user, ["_id", "name", "email", "referralCode"]),
-    token,
-  });
-});
-
-// Login user
-router.post("/loginnow", async (req, res) => {
-  const { email, password } = req.body;
-
-  if (!email || !password) {
-    return res.status(400).json({ error: "Email and password are required" });
-  }
-
-  try {
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(400).json({ error: "Invalid email or password" });
-    }
-
-    const validPassword = await bcrypt.compare(password, user.password);
-    if (!validPassword) {
-      return res.status(400).json({ error: "Invalid email or password" });
-    }
-
-    const payload = {
+    res.status(201).json({
       _id: user._id,
       name: user.name,
       email: user.email,
-      isAdmin: user.isAdmin,
+      role: user.role,
+      referralCode: user.referralCode,
+      token,
+    });
+  } catch (err) {
+    console.error('User registration error:', err.message);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// ✅ Direct password reset (no token)
+router.post('/reset-password', async (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) return res.status(400).send('Email and new password are required.');
+
+  const user = await User.findOne({ email });
+  if (!user) return res.status(400).send('User with this email does not exist.');
+
+  const salt = await bcrypt.genSalt(10);
+  user.password = await bcrypt.hash(password, salt);
+
+  try {
+      await user.save();
+      res.send('Password has been reset successfully.');
+  } catch (err) {
+      res.status(500).send('Error updating password: ' + err.message);
+  }
+});
+
+// ✅ Login route
+router.post("/loginnow", async (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password)
+    return res.status(400).json({ error: "Email and password are required" });
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user)
+      return res.status(400).json({ error: "Invalid email or password" });
+
+    const validPassword = await bcrypt.compare(password, user.password);
+    if (!validPassword)
+      return res.status(400).json({ error: "Invalid email or password" });
+
+    const payload = {
+      id: user._id,
+      email: user.email,
+      role: user.role || "user",
     };
 
-    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "1h" });
+    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "7d" });
 
     res.json({
       token,
-      user: _.pick(user, ["_id", "name", "email", "isAdmin", "referralCode", "balance"]),
+      user: _.pick(user, ["_id", "name", "email", "role", "referralCode", "balance"]),
     });
   } catch (err) {
     console.error("Login error:", err);
@@ -127,21 +125,22 @@ router.post("/loginnow", async (req, res) => {
   }
 });
 
-// Get current user data
+// ✅ Get current user data
 router.get("/me", authenticateToken, async (req, res) => {
-  console.log('Received request to /api/users/me with token:', req.headers.authorization);
   try {
-    const user = await User.findById(req.user._id).select("name email balance referralCode referrals");
+    const user = await User.findById(req.user.id).select(
+      "name email balance referralCode referrals"
+    );
     if (!user) {
-      console.log('User not found for ID:', req.user._id);
       return res.status(404).json({ error: "User not found" });
     }
+
     res.json({
       _id: user._id,
       name: user.name,
       email: user.email,
       balance: user.balance || 0,
-      referralCode: user.referralCode || '',
+      referralCode: user.referralCode || "",
       referredCount: user.referrals?.length || 0,
     });
   } catch (err) {

@@ -1,6 +1,6 @@
 import express from "express";
 import multer from "multer";
-import { cloudinaryInstance as cloudinary } from "../app.js";
+import { v2 as cloudinary } from 'cloudinary';
 import { authenticateToken, authenticateAdmin } from "../middleware/auth.js";
 import GiftCard from "../model/giftcard.js";
 import { Redeem } from "../model/redeem.js";

@@ -1,9 +1,14 @@
 import express from 'express';
+import cors from 'cors';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
-import cors from 'cors';
-import { v2 as cloudinary } from 'cloudinary'; // ✅ Correct Cloudinary import
-import referralRoutes from './routes/referral.js';
+import { v2 as cloudinary } from 'cloudinary';
+import authRouter from './routes/auth.js';
+import  redemptionRouter from './routes/redemptions.js';
+import referralRouter from './routes/referral.js';
+import giftCardRouter from './routes/giftcards.js';
+import userRouter from './routes/users.js';
+
 // Load environment variables
 dotenv.config();
 
@@ -15,63 +20,29 @@ cloudinary.config({
   secure: true,
 });
 
-export const cloudinaryInstance = cloudinary; // ✅ Correct export
-
-// MongoDB Connection with proper settings
-mongoose.connect(process.env.MONGODB_URI, {
-  serverSelectionTimeoutMS: 5000,
-  socketTimeoutMS: 45000,
-  retryWrites: true,
-  retryReads: true,
-  w: 'majority'
-})
-.then(() => console.log('✅ Connected to MongoDB'))
-.catch(err => console.error('❌ MongoDB connection error:', err));
-
-// Mongoose connection events
-mongoose.connection.on('connected', () => {
-  console.log('Mongoose connected to DB');
-});
-
-mongoose.connection.on('error', (err) => {
-  console.error('Mongoose connection error:', err);
-});
-
-mongoose.connection.on('disconnected', () => {
-  console.log('Mongoose disconnected from DB');
-});
-
-// Initialize Express
 const app = express();
+const port = process.env.PORT || 4500;
 
-// CORS Configuration
+// Middleware
 app.use(cors({
-  origin: [
-    'http://localhost:3000',
-    'https://ugobueze-web.vercel.app',
-    'https://ugobueze-app.onrender.com'
-  ],
+  origin: ['http://localhost:3000', 'https://ugobueze-web.vercel.app', 'https://ugobueze-app.onrender.com'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization', 'x-api-key']
 }));
-
-// Body parser
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Routes
-import authRoute from './routes/auth.js';
-import giftCardRoutes from './routes/giftcards.js';
-import userRoute from './routes/users.js';
+app.use('/api/auth', authRouter);
+app.use('/api/admin', redemptionRouter);
+app.use('/api/referrals', referralRouter);
+app.use('/api/giftcards', giftCardRouter);
+app.use('/api/users', userRouter);
 
-app.use('/api/auth', authRoute);
-app.use('/api/users', userRoute);
-app.use('/api/giftcards', giftCardRoutes);
-app.use('/api/referrals', referralRoutes);
 // Health check endpoint
 app.get('/api/health', (req, res) => {
-  res.status(200).json({ 
+  res.status(200).json({
     success: true,
     status: 'healthy',
     timestamp: new Date().toISOString(),
@@ -88,26 +59,44 @@ app.get('/signup', (req, res) => {
   return res.redirect(`https://ugobueze-web.vercel.app/signup?code=${code}`);
 });
 
+// MongoDB Connection
+mongoose.connect(process.env.MONGODB_URI, {
+  serverSelectionTimeoutMS: 5000,
+  socketTimeoutMS: 45000,
+  retryWrites: true,
+  retryReads: true,
+  w: 'majority'
+})
+  .then(() => console.log('✅ Connected to MongoDB'))
+  .catch(err => console.error('❌ MongoDB connection error:', err));
+
+// Log registered routes
+app._router.stack.forEach((r) => {
+  if (r.route && r.route.path) {
+    console.log(`Registered route: ${Object.keys(r.route.methods).join(',')} ${r.route.path}`);
+  }
+});
+
 // 404 handler
 app.use((req, res) => {
-  res.status(404).json({ 
-    error: "Not found",
-    message: "Endpoint not found" 
+  console.log(`404: ${req.method} ${req.url}`);
+  res.status(404).json({
+    error: 'Not found',
+    message: 'Endpoint not found'
   });
 });
 
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error('❌ Server error:', err.stack);
-  res.status(500).json({ 
-    error: "Server error",
-    message: "Internal server error",
+  res.status(500).json({
+    error: 'Server error',
+    message: 'Internal server error',
     details: process.env.NODE_ENV === 'development' ? err.message : null
   });
 });
 
 // Start server
-const PORT = process.env.PORT || 4500;
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
+app.listen(port, () => {
+  console.log(`🚀 Server running on http://localhost:${port}`);
 });
