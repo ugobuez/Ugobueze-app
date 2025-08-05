@@ -92,38 +92,7 @@ router.post('/reset-password', async (req, res) => {
   }
 });
 
-// ✅ Login route
-router.post("/loginnow", async (req, res) => {
-  const { email, password } = req.body;
-  if (!email || !password)
-    return res.status(400).json({ error: "Email and password are required" });
 
-  try {
-    const user = await User.findOne({ email });
-    if (!user)
-      return res.status(400).json({ error: "Invalid email or password" });
-
-    const validPassword = await bcrypt.compare(password, user.password);
-    if (!validPassword)
-      return res.status(400).json({ error: "Invalid email or password" });
-
-    const payload = {
-      id: user._id,
-      email: user.email,
-      role: user.role || "user",
-    };
-
-    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "7d" });
-
-    res.json({
-      token,
-      user: _.pick(user, ["_id", "name", "email", "role", "referralCode", "balance"]),
-    });
-  } catch (err) {
-    console.error("Login error:", err);
-    res.status(500).json({ error: "Server error" });
-  }
-});
 
 // ✅ Get current user data
 router.get("/me", authenticateToken, async (req, res) => {

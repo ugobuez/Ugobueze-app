@@ -11,14 +11,6 @@ Content-Type: application/json
   "image": "https://res.cloudinary.com/drbiup2zg/image/upload/v1742984827/razer_kqt8dh.webp"
 }
 
-### User Login
-POST http://localhost:4500/api/auth/loginNow
-Content-Type: application/json
-
-{
-  "email": "ugobuezeweb@gmail.com",
-  "password": "ugobueze"
-}
 
 ### get giftcard
 GET http://localhost:4500/api/admin/redemptions
@@ -104,12 +96,12 @@ GET http://localhost:4500/api/referrals/code/688e3589db1879cc605b6737
 Content-Type: application/json
 
 ### 1. Admin Login
-POST http://localhost:4500/api/auth/loginNow
+POST http://localhost:4500/api/auth/loginnow
 Content-Type: application/json
 
 {
-  "email": "ugochukwumeshach8@gmail.com",
-  "password": "Askme@8"
+  "email": "ugobuezeweb@gmail.com",
+  "password": "ugobueze"
 }
 
 ### 2. Get All Gift Cards
@@ -132,13 +124,30 @@ Content-Type: application/json
 ### 5. Get All Redemptions (Admin)
 
 GET http://localhost:4500/api/admin/redemptions
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2N2ZlNDUwYTBiOTY1Yjg4YjNmZTc5YmMiLCJuYW1lIjoiVWdvY2h1a3d1IE1lc2hhY2giLCJlbWFpbCI6InVnb2NodWt3dW1lc2hhY2g4QGdtYWlsLmNvbSIsImlzQWRtaW4iOnRydWUsImlhdCI6MTc1NDMyMTk2OSwiZXhwIjoxNzU0MzI1NTY5fQ.8AlN4TBuhdhq6--hdIw30qzwmlnRj1mrq9RVSP2z4Rg
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4OTFjNjZmODcxZmVlZjJkZTRkMTA0OCIsImVtYWlsIjoidWdvYnVlemV3ZWI1MDVAZ21haWwuY29tIiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzU0MzgzOTg0LCJleHAiOjE3NTQ5ODg3ODR9.9YIOZRGGzDZiWgVhhb9JWm00G9NqLlkVne9B7M05evg
 
 
 
 
 
-curl -X POST http://localhost:4500/api/giftcards/688f0e52cc1be6951613b158/redeem \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODhjNDJiM2M3MjkzODAzMGQ4NGUyYzIiLCJuYW1lIjoiVWdvY2h1a3d1IE1lc2hhY2giLCJlbWFpbCI6InVnb2J1ZXpld2ViQGdtYWlsLmNvbSIsImlzQWRtaW4iOnRydWUsImlhdCI6MTc1NDIwNTU0NSwiZXhwIjoxNzU0MjA5MTQ1fQ.jOy8g84wxBpN11RNAiUWgC77hS3Wd_fIZps4ruOGorc" \
-  -F "amount=1300" \
-  -F "image=@/Users/apple/Downloads/Walmart-gift-card.webp"
+### User Login
+POST http://localhost:4500/api/auth/loginnow
+Content-Type: application/json
+
+{
+  "email": "ugobuezewebstudio@gmail.com",
+  "password": "ugobueze"
+}
+
+
+### Create User
+POST http://localhost:4500/api/users
+Content-Type: application/json
+
+{
+  "name": "Ugo web studio",
+  "email": "ugobuezewebstudio@gmail.com",
+  "password": "ugobueze",
+  "referredBy": "-Og1mR-d",
+  "isAdmin": true
+}
