@@ -1,5 +1,5 @@
-import Activity from '../model/activity.js'; // Correct case and default import
-
+ // Correct case and default import
+import Activity from '../src/model/activity.js'; // Ensure correct path and import
 const logActivity = async ({ userId, type, title, description }) => {
   try {
     const activity = new Activity({

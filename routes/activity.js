@@ -1,6 +1,6 @@
 import express from 'express';
 import { authenticateToken } from '../middleware/auth.js';
-import Activity from '../model/activity.js'; // Use default import
+import Activity from '../src/model/activity.js'; // Use default import
 
 const router = express.Router();
 
