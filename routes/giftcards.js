@@ -21,6 +21,30 @@ const upload = multer({
   },
 });
 
+// Inside userController.js
+import logActivity from '../utils/logActivity.js';
+
+export const submitRedeem = async (req, res) => {
+  try {
+    const user = req.user;
+    
+    // Your existing gift card redemption logic here
+    // e.g., saving the gift card to the database
+
+    await logActivity({
+      userId: user._id,
+      type: 'redeem',
+      description: 'User submitted a gift card for redemption',
+    });
+
+    res.status(200).json({ message: 'Redemption submitted successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Redemption failed' });
+  }
+};
+
+
 // Cloudinary upload helper
 const uploadToCloudinary = (fileBuffer) => {
   return new Promise((resolve, reject) => {
@@ -149,6 +173,10 @@ router.post('/:id/redeem', authenticateToken, checkMongoConnection, upload.singl
     });
 
     await redemption.save();
+   
+
+
+
 
     res.status(201).json({
       success: true,
@@ -257,7 +285,7 @@ router.post('/', authenticateToken, authenticateAdmin, checkMongoConnection, upl
       cloudinaryId: uploadResult.public_id,
     });
     await giftCard.save();
-
+ 
     res.status(201).json({ success: true, message: 'Gift card created successfully', data: giftCard });
   } catch (error) {
     console.error('Create gift card error:', error);

@@ -1,0 +1,87 @@
+### Get All Activities (Auth Required)
+GET http://localhost:4500/api/activities
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZmU0NTBhMGI5NjViODhiM2ZlNzliYyIsImVtYWlsIjoidWdvY2h1a3d1bWVzaGFjaDhAZ21haWwuY29tIiwiaXNBZG1pbiI6ZmFsc2UsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNzU0NTE5NDA1LCJleHAiOjE3NTUxMjQyMDV9.UylEQ9AVVtiIX4Bs-SRXUMjzrzzwdYg-cZa49La-DzM
+
+###
+
+### Create Activity (Manual - for testing)
+POST http://localhost:4500/api/activities
+Content-Type: application/json
+Authorization: Bearer {{your_jwt_token}}
+
+{
+  "type": "Test",
+  "description": "Manual activity creation"
+}
+
+###
+
+### Get Activity by ID
+GET http://localhost:4500/api/activities/{{activity_id}}
+Authorization: Bearer {{your_jwt_token}}
+
+###
+
+### Update Activity
+PATCH http://localhost:4500/api/activities/{{activity_id}}
+Content-Type: application/json
+Authorization: Bearer {{your_jwt_token}}
+
+{
+  "description": "Updated activity description"
+}
+
+###
+
+### Delete Activity
+DELETE http://localhost:4500/api/activities/{{activity_id}}
+Authorization: Bearer {{your_jwt_token}}
+
+
+
+### Submit withdrawal request (User)
+POST http://localhost:4500/api/withdrawals
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZmU0NTBhMGI5NjViODhiM2ZlNzliYyIsImVtYWlsIjoidWdvY2h1a3d1bWVzaGFjaDhAZ21haWwuY29tIiwiaXNBZG1pbiI6ZmFsc2UsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNzU0NTE5NDA1LCJleHAiOjE3NTUxMjQyMDV9.UylEQ9AVVtiIX4Bs-SRXUMjzrzzwdYg-cZa49La-DzM
+
+{
+  "amount": 8,
+  "accountNumber": "1407837112",
+  "accountName": "Ugo Bueze",
+  "bankName": "Access Bank"
+}
+
+
+### Get all withdrawal requests (Admin)
+GET http://localhost:4500/api/withdrawals
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4OTIzZmE1NmEwOWQ1Y2I0MzVhYWI3YiIsImVtYWlsIjoid2Vic3R1ZGlvQGdtYWlsLmNvbSIsImlzQWRtaW4iOnRydWUsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc1NDUxOTcxMiwiZXhwIjoxNzU1MTI0NTEyfQ.2NQE7vjgkaXKy0wBtDevKaIBAnkrINUcMe5dXVAgtmk
+
+
+### Approve withdrawal request (Admin)
+PATCH http://localhost:4500/api/withdrawals/68923fa56a09d5cb435aab7b/6893e0ccc101ebcc5802a916
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4OTIzZmE1NmEwOWQ1Y2I0MzVhYWI3YiIsImVtYWlsIjoid2Vic3R1ZGlvQGdtYWlsLmNvbSIsImlzQWRtaW4iOnRydWUsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc1NDUxOTcxMiwiZXhwIjoxNzU1MTI0NTEyfQ.2NQE7vjgkaXKy0wBtDevKaIBAnkrINUcMe5dXVAgtmk
+
+{
+  "status": "approved"
+}
+
+
+### User Login
+POST http://localhost:4500/api/auth/loginNow
+Content-Type: application/json
+
+{
+  "email": "ugochukwumeshach8@gmail.com",
+  "password": "Askme@8"
+}
+
+
+### withdrawal approval
+PATCH http://localhost:4500/api/withdrawals/67fe450a0b965b88b3fe79bc/6893d818d1a27c74b862e3ea
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4OTIzZmE1NmEwOWQ1Y2I0MzVhYWI3YiIsImVtYWlsIjoid2Vic3R1ZGlvQGdtYWlsLmNvbSIsImlzQWRtaW4iOnRydWUsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc1NDUxOTcxMiwiZXhwIjoxNzU1MTI0NTEyfQ.2NQE7vjgkaXKy0wBtDevKaIBAnkrINUcMe5dXVAgtmk
+
+{
+  "status": "approved"
+}

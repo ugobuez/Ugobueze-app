@@ -1,16 +1,13 @@
-
-
-
-
 import express from 'express';
 import mongoose from 'mongoose';
 import multer from 'multer';
 import { v2 as cloudinary } from 'cloudinary';
 import { User } from '../model/user.js';
-import { Redeem } from '../model/redeem.js'; // Correct model
+import { Redeem } from '../model/redeem.js';
 import GiftCard from '../model/giftcard.js';
 import { Referral } from '../model/referral.js';
 import { authenticateToken, authenticateAdmin } from '../middleware/auth.js';
+import logActivity from '../utils/logActivity.js';
 
 const router = express.Router();
 const REFERRAL_BONUS = Number(process.env.REFERRAL_BONUS || 3);
@@ -59,6 +56,14 @@ router.post('/redemptions/:id/approve', authenticateAdmin, async (req, res) => {
     user.balance += amount;
     await user.save();
 
+    // Log activity for approval
+    await logActivity({
+      userId: redemption.userId,
+      type: 'redemption',
+      title: 'Gift Card Redemption Approved',
+      description: `Your ${redemption.brand} gift card redemption of $${amount} was approved.`,
+    });
+
     // Handle referral earnings
     if (user.referredBy) {
       const referral = await Referral.findOne({
@@ -79,10 +84,10 @@ router.post('/redemptions/:id/approve', authenticateAdmin, async (req, res) => {
       }
     }
 
-    res.json({ message: 'Redemption approved successfully' });
+    res.json({ message: 'Redemption approved successfully', balance: user.balance });
   } catch (err) {
-    console.error('Approve redemption error:', err);
-    res.status(500).json({ error: err.message });
+    console.error('Approve redemption error:', err.message);
+    res.status(500).json({ error: 'Server error', details: err.message });
   }
 });
 
@@ -109,27 +114,34 @@ router.post('/redemptions/:id/reject', authenticateAdmin, async (req, res) => {
     redemption.reason = reason || 'No reason provided';
     await redemption.save();
 
+    // Log activity for rejection
+    await logActivity({
+      userId: redemption.userId,
+      type: 'redemption',
+      title: 'Gift Card Redemption Rejected',
+      description: `Your ${redemption.brand} gift card redemption of $${redemption.amount} was rejected. Reason: ${reason || 'No reason provided'}.`,
+    });
+
     res.json({ message: 'Redemption rejected successfully' });
   } catch (err) {
-    console.error('Reject redemption error:', err);
-    res.status(500).json({ error: err.message });
+    console.error('Reject redemption error:', err.message);
+    res.status(500).json({ error: 'Server error', details: err.message });
   }
 });
 
 // ------------------- GET ALL REDEMPTIONS -------------------
 router.get('/redemptions', authenticateAdmin, async (req, res) => {
-    try {
-      console.log('Fetching redemptions for user:', req.user);
-      const redemptions = await Redeem.find()
-        .populate('userId', 'name email')
-        .populate('giftCardId', 'brand name value currency')
-        .sort({ createdAt: -1 });
-      res.json(redemptions);
-    } catch (err) {
-      console.error('Error fetching redemptions:', err);
-      res.status(500).json({ error: 'Internal server error' });
-    }
-  });
+  try {
+    console.log('Fetching redemptions for user:', req.user);
+    const redemptions = await Redeem.find()
+      .populate('userId', 'name email')
+      .populate('giftCardId', 'brand name value currency')
+      .sort({ createdAt: -1 });
+    res.json(redemptions);
+  } catch (err) {
+    console.error('Error fetching redemptions:', err.message);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 export default router;
-
-
