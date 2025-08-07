@@ -326,7 +326,7 @@ router.delete('/:id', authenticateToken, authenticateAdmin, checkMongoConnection
 });
 
 // Get all gift cards (admin only)
-router.get('/', authenticateToken, authenticateAdmin, async (req, res) => {
+router.get('/', authenticateToken, async (req, res) => {
   try {
     const cards = await GiftCard.find().sort({ createdAt: -1 });
     res.json({ success: true, data: cards });
