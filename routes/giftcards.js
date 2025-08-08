@@ -7,6 +7,7 @@ import { Redeem } from '../model/redeem.js';
 import { Referral } from '../model/referral.js';
 import { User } from '../model/user.js';
 import mongoose from 'mongoose';
+import logActivity from '../utils/logActivity.js';
 
 const router = express.Router();
 
@@ -21,35 +22,19 @@ const upload = multer({
   },
 });
 
-// Inside userController.js
-import logActivity from '../utils/logActivity.js';
-
-export const submitRedeem = async (req, res) => {
-  try {
-    const user = req.user;
-    
-    // Your existing gift card redemption logic here
-    // e.g., saving the gift card to the database
-
-    await logActivity({
-      userId: user._id,
-      type: 'redeem',
-      description: 'User submitted a gift card for redemption',
-    });
-
-    res.status(200).json({ message: 'Redemption submitted successfully' });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Redemption failed' });
-  }
+// Joi validation schema for redemption submission
+const validateRedemption = (data) => {
+  const schema = Joi.object({
+    amount: Joi.number().positive().min(1).required(),
+  });
+  return schema.validate(data);
 };
-
 
 // Cloudinary upload helper
 const uploadToCloudinary = (fileBuffer) => {
   return new Promise((resolve, reject) => {
     const uploadStream = cloudinary.uploader.upload_stream(
-      { folder: 'gift_cards', resource_type: 'auto', timeout: 60000 }, // Updated folder name
+      { folder: 'gift_cards', resource_type: 'auto', timeout: 60000 },
       (error, result) => {
         if (error) {
           console.error('Cloudinary upload error:', error);
@@ -92,9 +77,71 @@ const checkMongoConnection = async (req, res, next) => {
   }
 };
 
+// Updated submitRedeem function
+export const submitRedeem = async (req, res) => {
+  const { error } = validateRedemption(req.body);
+  if (error) {
+    console.log(`Validation error in submitRedeem: ${error.details[0].message}`);
+    return res.status(400).json({ error: error.details[0].message });
+  }
+
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      console.log(`User not found for ID: ${req.user.id}`);
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const { amount } = req.body;
+    const { id: giftCardId } = req.params;
+
+    if (!req.file) return res.status(400).json({ error: 'Validation error', message: 'Image is required' });
+    const giftCard = await GiftCard.findById(giftCardId).maxTimeMS(10000);
+    if (!giftCard) return res.status(404).json({ error: 'Not found', message: 'Gift card not found' });
+
+    let uploadResult;
+    try {
+      uploadResult = await uploadToCloudinary(req.file.buffer);
+    } catch (error) {
+      console.error('Image upload failed:', error);
+      return res.status(502).json({ error: 'Bad Gateway', message: error.message });
+    }
+
+    const redemption = new Redeem({
+      userId: req.user.id,
+      giftCardId,
+      amount: parseFloat(amount),
+      imageUrl: uploadResult.secure_url,
+      cloudinaryId: uploadResult.public_id,
+      status: 'pending',
+    });
+
+    await redemption.save();
+
+    // Log activity for submission
+    await logActivity({
+      userId: req.user.id,
+      type: 'redemption',
+      title: 'Gift Card Redemption Submitted',
+      description: `You submitted a ${giftCard.name || 'gift card'} redemption for $${amount}.`,
+    });
+
+    console.log(`Redemption request submitted for user ${req.user.id}: $${amount}`);
+    res.status(200).json({
+      message: 'Redemption submitted successfully',
+      redemptionId: redemption._id,
+      status: redemption.status,
+      submittedAt: redemption.createdAt,
+    });
+  } catch (err) {
+    console.error('Redemption error:', err.message);
+    res.status(500).json({ error: 'Internal server error', details: err.message });
+  }
+};
+
 // Test token endpoint
 router.get('/test-token', authenticateToken, (req, res) => {
-  console.log('Test-token route hit:', { userId: req.user._id });
+  console.log('Test-token route hit:', { userId: req.user.id });
   res.json({ success: true, message: 'Token is valid', user: req.user });
 });
 
@@ -117,87 +164,16 @@ router.get('/redeem', authenticateToken, authenticateAdmin, checkMongoConnection
       .populate('userId', 'name email')
       .populate('giftCardId', 'name brand value currency')
       .sort({ createdAt: -1 });
-    res.json({ success: true, data: redemptions });
-  } catch (error) {
-    console.error('Fetch redemptions error:', error);
-    res.status(500).json({
-      error: 'Server error',
-      message: 'Failed to fetch redemptions',
-      details: process.env.NODE_ENV === 'development' ? error.message : null,
-    });
+    console.log(`Fetched ${redemptions.length} redemptions`);
+    res.status(200).json({ success: true, data: redemptions });
+  } catch (err) {
+    console.error('Error fetching redemptions:', err.message);
+    res.status(500).json({ error: 'Server error', details: err.message });
   }
 });
 
 // Redeem gift card
-router.post('/:id/redeem', authenticateToken, checkMongoConnection, upload.single('image'), async (req, res) => {
-  try {
-    console.log('Redeem request received:', {
-      headers: req.headers,
-      body: req.body,
-      user: req.user,
-      file: req.file?.originalname,
-    });
-
-    if (process.env.REQUIRE_API_KEY === 'true') {
-      const apiKey = req.headers['x-api-key'] || req.body.api_key;
-      if (!apiKey || apiKey !== process.env.JWT_SECRET) {
-        console.error('Invalid API key:', { provided: apiKey });
-        return res.status(401).json({ error: 'Authentication failed', message: 'Valid API key required' });
-      }
-    }
-
-    const { amount } = req.body;
-    const { id: giftCardId } = req.params;
-
-    if (!req.file) return res.status(400).json({ error: 'Validation error', message: 'Image is required' });
-    if (!amount || isNaN(parseFloat(amount))) return res.status(400).json({ error: 'Validation error', message: 'Valid amount is required' });
-
-    const giftCard = await GiftCard.findById(giftCardId).maxTimeMS(10000);
-    if (!giftCard) return res.status(404).json({ error: 'Not found', message: 'Gift card not found' });
-
-    let uploadResult;
-    try {
-      uploadResult = await uploadToCloudinary(req.file.buffer);
-    } catch (error) {
-      console.error('Image upload failed:', error);
-      return res.status(502).json({ error: 'Bad Gateway', message: error.message });
-    }
-
-    const redemption = new Redeem({
-      userId: req.user._id,
-      giftCardId,
-      amount: parseFloat(amount),
-      imageUrl: uploadResult.secure_url,
-      cloudinaryId: uploadResult.public_id,
-      status: 'pending',
-    });
-
-    await redemption.save();
-   
-
-
-
-
-    res.status(201).json({
-      success: true,
-      message: 'Redemption submitted successfully',
-      data: {
-        redemptionId: redemption._id,
-        amount: redemption.amount,
-        status: redemption.status,
-        imageUrl: redemption.imageUrl,
-        submittedAt: redemption.createdAt,
-      },
-    });
-  } catch (error) {
-    console.error('Redemption error:', error);
-    res.status(500).json({
-      error: 'Server error',
-      message: 'Failed to process redemption',
-      details: process.env.NODE_ENV === 'development' ? error.message : null,
-    });
-  }
-});
+router.post('/:id/redeem', authenticateToken, checkMongoConnection, upload.single('image'), submitRedeem);
 
 // Approve redemption (admin)
 router.post('/redeem/:id/approve', authenticateToken, authenticateAdmin, checkMongoConnection, async (req, res) => {
@@ -215,6 +191,14 @@ router.post('/redeem/:id/approve', authenticateToken, authenticateAdmin, checkMo
     redemption.status = 'approved';
     await redemption.save();
 
+    const giftCard = await GiftCard.findById(redemption.giftCardId);
+    await logActivity({
+      userId: user._id,
+      type: 'redemption',
+      title: 'Gift Card Redemption Approved',
+      description: `Your ${giftCard.name || 'gift card'} redemption of $${redemption.amount} was approved.`,
+    });
+
     const referral = await Referral.findOne({ referredUser: user._id });
     if (referral && !referral.bonusPaid) {
       const referrer = await User.findById(referral.referrer);
@@ -226,14 +210,11 @@ router.post('/redeem/:id/approve', authenticateToken, authenticateAdmin, checkMo
       }
     }
 
+    console.log(`Redemption ${redemption._id} approved for user ${user._id}`);
     res.status(200).json({ success: true, message: 'Redemption approved successfully', data: redemption });
-  } catch (error) {
-    console.error('Approve redemption error:', error);
-    res.status(500).json({
-      error: 'Server error',
-      message: 'Failed to approve redemption',
-      details: process.env.NODE_ENV === 'development' ? error.message : null,
-    });
+  } catch (err) {
+    console.error('Approve redemption error:', err.message);
+    res.status(500).json({ error: 'Server error', details: err.message });
   }
 });
 
@@ -246,14 +227,19 @@ router.post('/redeem/:id/reject', authenticateToken, authenticateAdmin, checkMon
     redemption.status = 'rejected';
     await redemption.save();
 
-    res.status(200).json({ success: true, message: 'Redemption rejected successfully', data: redemption });
-  } catch (error) {
-    console.error('Reject redemption error:', error);
-    res.status(500).json({
-      error: 'Server error',
-      message: 'Failed to reject redemption',
-      details: process.env.NODE_ENV === 'development' ? error.message : null,
+    const giftCard = await GiftCard.findById(redemption.giftCardId);
+    await logActivity({
+      userId: redemption.userId,
+      type: 'redemption',
+      title: 'Gift Card Redemption Rejected',
+      description: `Your ${giftCard.name || 'gift card'} redemption of $${redemption.amount} was rejected.`,
     });
+
+    console.log(`Redemption ${redemption._id} rejected`);
+    res.status(200).json({ success: true, message: 'Redemption rejected successfully', data: redemption });
+  } catch (err) {
+    console.error('Reject redemption error:', err.message);
+    res.status(500).json({ error: 'Server error', details: err.message });
   }
 });
 
@@ -287,13 +273,9 @@ router.post('/', authenticateToken, authenticateAdmin, checkMongoConnection, upl
     await giftCard.save();
  
     res.status(201).json({ success: true, message: 'Gift card created successfully', data: giftCard });
-  } catch (error) {
-    console.error('Create gift card error:', error);
-    res.status(500).json({
-      error: 'Server error',
-      message: 'Failed to create gift card',
-      details: process.env.NODE_ENV === 'development' ? error.message : null,
-    });
+  } catch (err) {
+    console.error('Create gift card error:', err.message);
+    res.status(500).json({ error: 'Server error', details: err.message });
   }
 });
 
@@ -315,13 +297,9 @@ router.delete('/:id', authenticateToken, authenticateAdmin, checkMongoConnection
 
     await card.deleteOne();
     res.json({ success: true, message: 'Gift card deleted successfully' });
-  } catch (error) {
-    console.error('Delete gift card error:', error);
-    res.status(500).json({
-      error: 'Server error',
-      message: 'Failed to delete gift card',
-      details: process.env.NODE_ENV === 'development' ? error.message : null,
-    });
+  } catch (err) {
+    console.error('Delete gift card error:', err.message);
+    res.status(500).json({ error: 'Server error', details: err.message });
   }
 });
 
@@ -330,13 +308,9 @@ router.get('/', authenticateToken, async (req, res) => {
   try {
     const cards = await GiftCard.find().sort({ createdAt: -1 });
     res.json({ success: true, data: cards });
-  } catch (error) {
-    console.error('Fetch gift cards error:', error);
-    res.status(500).json({
-      error: 'Server error',
-      message: 'Failed to fetch gift cards',
-      details: process.env.NODE_ENV === 'development' ? error.message : null,
-    });
+  } catch (err) {
+    console.error('Fetch gift cards error:', err.message);
+    res.status(500).json({ error: 'Server error', details: err.message });
   }
 });
 
@@ -346,13 +320,9 @@ router.get('/:id', authenticateToken, async (req, res) => {
     const card = await GiftCard.findById(req.params.id);
     if (!card) return res.status(404).json({ error: 'Not found', message: 'Gift card not found' });
     res.json({ success: true, data: card });
-  } catch (error) {
-    console.error('Fetch gift card error:', error);
-    res.status(500).json({
-      error: 'Server error',
-      message: 'Failed to fetch gift card',
-      details: process.env.NODE_ENV === 'development' ? error.message : null,
-    });
+  } catch (err) {
+    console.error('Fetch gift card error:', err.message);
+    res.status(500).json({ error: 'Server error', details: err.message });
   }
 });
 
