@@ -7,6 +7,7 @@ import { Redeem } from '../model/redeem.js';
 import { Referral } from '../model/referral.js';
 import { User } from '../model/user.js';
 import mongoose from 'mongoose';
+import Joi from 'joi'; // Ensure Joi is imported
 import logActivity from '../utils/logActivity.js';
 
 const router = express.Router();
