@@ -1,70 +1,65 @@
 import express from 'express';
-import { authenticateToken, authenticateAdmin } from '../middleware/auth.js';
-import Activity from '../src/model/activity.js'; // Use default import
+import { authenticateToken } from '../middleware/auth.js';
+import Activity from '../src/model/activity.js';
+import { sendActivityEmail } from '../utils/logActivity.js';
 
-import nodemailer from 'nodemailer'; // For sending emails
 const router = express.Router();
 
-// GET /api/activities - Fetch all activities (admin-only) and send email notification
-router.get('/', authenticateAdmin, async (req, res) => {
-  try {
-    // Fetch all activities, sorted by most recent
-    const activities = await Activity.find({}).sort({ createdAt: -1 });
-    console.log(`Fetched ${activities.length} activities (admin view)`);
-
-    // Prepare email content
-    let emailBody = 'Recent User Activities:\n\n';
-    activities.forEach(activity => {
-      emailBody += `User ID: ${activity.userId || 'N/A'}, Type: ${activity.type || 'N/A'}, Details: ${activity.details || 'N/A'}, Date: ${activity.createdAt || 'N/A'}\n`;
-    });
-
-    // Set up Nodemailer transporter using Gmail
-    const transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: process.env.GMAIL_USER, // e.g., ugochukwumeshach5@gmail.com
-        pass: process.env.GMAIL_APP_PASSWORD, // App Password from Gmail
-      },
-    });
-
-    // Email options
-    const mailOptions = {
-      from: process.env.GMAIL_USER,
-      to: process.env.ADMIN_EMAIL, // e.g., ugochukwumeshach8@gmail.com
-      subject: 'Gift Card App: All User Activities Report',
-      text: emailBody,
-    };
-
-    // Send the email (allow response even if email fails)
-    try {
-      await transporter.sendMail(mailOptions);
-      console.log('Activity report emailed to admin');
-    } catch (emailErr) {
-      console.error('Email sending failed:', emailErr.message);
-      // Optionally include email error in response for debugging
-      return res.status(200).json({
-        success: true,
-        data: activities,
-        emailWarning: 'Activities fetched, but email notification failed',
-      });
-    }
-
-    // Return activities as JSON
-    res.status(200).json({ success: true, data: activities });
-  } catch (err) {
-    console.error('Error fetching activities:', err.message);
-    res.status(500).json({ error: 'Server error', details: err.message });
-  }
-});
-
-// GET /api/activities - Fetch all activities for the authenticated user
+// GET /api/activities - Admin gets all, user gets only their own
 router.get('/', authenticateToken, async (req, res) => {
   try {
-    const activities = await Activity.find({ userId: req.user.id }).sort({ createdAt: -1 });
-    console.log(`Fetched ${activities.length} activities for user ${req.user.id}`);
+    let activities;
+    let emailTo;
+    let subject;
+
+    if (req.user.isAdmin) {
+      // Admin: fetch all
+      activities = await Activity.find({}).sort({ createdAt: -1 });
+      console.log(`Fetched ${activities.length} activities (admin view)`);
+
+      // Send admin report if there are important activities
+      const importantActivities = activities.filter(
+        (activity) =>
+          activity.type === 'gift_card_submission' || activity.type === 'withdrawal'
+      );
+      if (importantActivities.length > 0) {
+        emailTo = process.env.ADMIN_EMAIL;
+        subject = 'Gift Card App: Important Activities Report';
+        try {
+          await sendActivityEmail(importantActivities, emailTo, subject, true);
+        } catch (emailErr) {
+          return res.status(200).json({
+            success: true,
+            data: activities,
+            emailWarning:
+              'Activities fetched, but email notification to admin failed',
+          });
+        }
+      }
+    } else {
+      // Regular user: fetch only their activities
+      activities = await Activity.find({ userId: req.user.id }).sort({ createdAt: -1 });
+      console.log(`Fetched ${activities.length} activities for user ${req.user.id}`);
+
+      if (activities.length > 0) {
+        emailTo = req.user.email;
+        subject = 'Gift Card App: Your Activity Report';
+        try {
+          await sendActivityEmail(activities, emailTo, subject, false);
+        } catch (emailErr) {
+          return res.status(200).json({
+            success: true,
+            data: activities,
+            emailWarning:
+              'Activities fetched, but email notification to user failed',
+          });
+        }
+      }
+    }
+
     res.status(200).json({ success: true, data: activities });
   } catch (err) {
-    console.error('Error fetching activities:', err.message);
+    console.error('Error fetching activities or sending email:', err.message);
     res.status(500).json({ error: 'Server error', details: err.message });
   }
 });
